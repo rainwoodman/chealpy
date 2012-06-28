@@ -38,17 +38,12 @@ void test1(void) {
   double vec[3];
   long   nside;
   long  ipix, npix, dpix, ip2, ip1;
-  int ix, iy, facenum, ix2, iy2, facenum2;
 
   printf("Starting C Healpix pixel routines test\n");
 
-  #ifdef HIGH_RESOLUTION
-  nside = 1<<28;
-  dpix = 3 * (1L<<35)- 1;
-  #else
-  nside = 1<<13;
-  dpix = 3 * (1L<<10)- 1;
-  #endif
+  nside = 1024;
+  dpix = 23;
+
   /* Find the number of pixels in the full map */
   npix = nside2npix(nside);
   printf("Number of pixels in full map: %ld\n", npix);
@@ -61,10 +56,7 @@ void test1(void) {
     vec2ang(vec, &theta, &phi);
     ang2pix_ring(nside, theta, phi, &ip2);
     ring2nest(nside,ip2,&ip1);
-    if (ip1 != ipix) {
-      printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
-      abort();
-    }
+    if (ip1 != ipix) {printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);}
   }
   printf("Ring -> ang -> Nest -> Ring\n");
   for (ipix = 0; ipix < npix; ipix +=dpix) {
@@ -93,7 +85,6 @@ void test1(void) {
   printf("test completed\n\n");
 }
 
-#ifdef ENABLE_FITSIO
 void test2 (void) {
   float *map;
   long nside, npix, np, ns;
@@ -135,12 +126,9 @@ void test2 (void) {
 
   printf("test completed\n\n");
 }
-#endif
 
 int main(void) {
   test1();
-#ifdef ENABLE_FITSIO
   test2();
-#endif
   return 0;
 }
