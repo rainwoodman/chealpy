@@ -13,8 +13,9 @@
 # where
 #  CC     is the C compiler you want to use (default: gcc)
 #  OPT    compilation option
-#  WITHOUT_CFITSIO if set cfitsio integration will not be built
-#  WITH_HIGHRES will use long for internal calculation, nside up to 1<<28; otherwise nside up to 8192
+#  WITH_HIGHRES=1   : use long for internal calculation, nside up to 1<<28 on x64; 
+#                     otherwise nside up to 8192
+#  WITHOUT_CFITSIO=1: cfitsio integration will not be built
 #  CFITSIO_INCDIR is where the header files for the 'cfitsio' library is kept
 #  CFITSIO_LIBDIR is where the 'cfitsio' library archive is kept
 #  AR is the command to create the archive with its index table
