@@ -62,8 +62,10 @@
 #
 OPT =
 AR = ar -rsv
+WITHOUT_CFITSIO = 0
+WITH_HIGHRES = 0
 
-ifndef WITHOUT_CFITSIO
+ifeq ($(WITHOUT_CFITSIO), 0)
   OPT += -DENABLE_FITSIO 
   ifdef CFITSIO_INCDIR
     OPT += -I$(CFITSIO_INCDIR)
@@ -74,7 +76,7 @@ ifndef WITHOUT_CFITSIO
   CFITSIO_LIBS += -lcfitsio
 endif
 
-ifdef WITH_HIGHRES
+ifneq ($(WITH_HIGHRES), 0)
   OPT += -DHIGH_RESOLUTION
 endif
 
@@ -137,7 +139,7 @@ test_chealpix : test_chealpix.c static
 	$(CC) $(OPT) -o $@ test_chealpix.o -L. -lchealpix $(CFITSIO_LIBS) -lm
 
 tests : test_chealpix
-	./test_chealpix
+	time ./test_chealpix
 
 #
 # General compilation rules

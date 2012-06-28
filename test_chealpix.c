@@ -43,11 +43,11 @@ void test1(void) {
   printf("Starting C Healpix pixel routines test\n");
 
   #ifdef HIGH_RESOLUTION
-  nside = 1<<28;
-  dpix = 3 * (1L<<35)- 1;
+  nside = 1<<13;
+  dpix = 3 * (1L<<8)- 1;
   #else
   nside = 1<<13;
-  dpix = 3 * (1L<<10)- 1;
+  dpix = 3 * (1L<<8)- 1;
   #endif
   /* Find the number of pixels in the full map */
   npix = nside2npix(nside);
