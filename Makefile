@@ -65,11 +65,12 @@ OPT =
 AR = ar -rsv
 WITHOUT_CFITSIO = 0
 WITH_HIGHRES = 0
+FLAGS = $(OPT)
 
 ifeq ($(WITHOUT_CFITSIO), 0)
-  OPT += -DENABLE_FITSIO 
+  FLAGS += -DENABLE_FITSIO 
   ifdef CFITSIO_INCDIR
-    OPT += -I$(CFITSIO_INCDIR)
+    FLAGS += -I$(CFITSIO_INCDIR)
   endif
   ifdef CFITSIO_LIBDIR
     CFITSIO_LIBS += -L$(CFITSIO_LIBDIR) 
@@ -77,16 +78,16 @@ ifeq ($(WITHOUT_CFITSIO), 0)
   CFITSIO_LIBS += -lcfitsio
 endif
 
-ifneq ($(WITH_HIGHRES), 0)
-  OPT += -DHIGH_RESOLUTION
+ifeq ($(WITH_HIGHRES), 1)
+  FLAGS += -DHIGH_RESOLUTION
 endif
 
 PIC = -fPIC
 #
-SHLIB_LD =      $(CC) $(OPT) $(PIC) -shared
+SHLIB_LD =      $(CC) $(FLAGS) $(PIC) -shared
 SHLIB_SUFFIX =  .so
 #
-DYLIB_LD =      $(CC) $(OPT) $(PIC) -dynamiclib
+DYLIB_LD =      $(CC) $(FLAGS) $(PIC) -dynamiclib
 DYLIB_SUFFIX =  .dylib
 
 # The sources in the package
@@ -136,8 +137,8 @@ install :  chealpix.h
 # Make the programs to test the package.
 
 test_chealpix : test_chealpix.c static
-	$(CC) $(OPT) -c -o test_chealpix.o $<
-	$(CC) $(OPT) -o $@ test_chealpix.o -L. -lchealpix $(CFITSIO_LIBS) -lm
+	$(CC) $(FLAGS) -c -o test_chealpix.o $<
+	$(CC) $(FLAGS) -o $@ test_chealpix.o -L. -lchealpix $(CFITSIO_LIBS) -lm
 
 tests : test_chealpix
 	time ./test_chealpix
@@ -146,11 +147,11 @@ tests : test_chealpix
 # General compilation rules
 # static objects
 %.s.o : %.c
-	$(CC) $(OPT)        -c -o $@ $< 
+	$(CC) $(FLAGS)        -c -o $@ $< 
 
 # non-static objects
 %.d.o : %.c
-	$(CC) $(OPT) $(PIC) -c -o $@ $< 
+	$(CC) $(FLAGS) $(PIC) -c -o $@ $< 
 
 # Clean: remove intermediate files
 clean :
