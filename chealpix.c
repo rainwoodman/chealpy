@@ -389,7 +389,11 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
     }
   }
 
-static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double *phi)
+/* z1 is 1 - z for North Polar cap,
+ *       undefined for equatorial region
+ *       1 + z for Sourth Polar cap
+ **/
+static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double * z1, double *phi)
   {
   PIX ncap_=nside_*(nside_-1)*2;
   PIX npix_=12*nside_*nside_;
@@ -399,7 +403,8 @@ static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double *phi)
     PIX iring = (PIX)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
     PIX iphi  = (pix+1) - 2*iring*(iring-1);
 
-    *z = 1.0 - (iring*iring)*fact2_;
+    *z1 = (iring*iring)*fact2_;
+    *z = 1.0 - *z1;
     *phi = (iphi-0.5) * halfpi/iring;
     }
   else if (pix<(npix_-ncap_)) /* Equatorial region */
@@ -421,7 +426,8 @@ static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double *phi)
     PIX iring = (PIX)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
     PIX iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
 
-    *z = -1.0 + (iring*iring)*fact2_;
+    *z1 = (iring*iring)*fact2_;
+    *z = *z1 - 1.0;
     *phi = (iphi-0.5) * halfpi/iring;
     }
   }
@@ -653,8 +659,16 @@ void vec2pix_nest(long nside, const double *vec, long *ipix)
   }
 void pix2ang_ring(long nside, long ipix, double *theta, double *phi)
   {
-  double z;
-  pix2ang_ring_z_phi (nside,ipix,&z,phi);
+  double z, z1;
+  pix2ang_ring_z_phi (nside,ipix,&z,&z1,phi);
+  if(z == 1.0) {
+   *theta = asin(sqrt(z1 * 0.5)) * 2;
+   return;
+  }
+  if(z == -1.0) {
+   *theta = asin(sqrt(z1 * 0.5)) * 2 + halfpi;
+   return;
+  }
   *theta=acos(z);
   }
 void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
@@ -665,9 +679,15 @@ void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
   }
 void pix2vec_ring(long nside, long ipix, double *vec)
   {
-  double z, phi, stheta;
-  pix2ang_ring_z_phi (nside,ipix,&z,&phi);
-  stheta=sqrt((1.-z)*(1.+z));
+  double z, z1, phi, stheta;
+  pix2ang_ring_z_phi (nside,ipix,&z, &z1, &phi);
+  if(z == 1.0) {
+    stheta = sqrt(2.0 * z1);
+  } else if(z == -1.0) {
+    stheta = sqrt(2.0 * z1);
+  } else {
+    stheta=sqrt((1.-z)*(1.+z));
+  }
   vec[0]=stheta*cos(phi);
   vec[1]=stheta*sin(phi);
   vec[2]=z;
