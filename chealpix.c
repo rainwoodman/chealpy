@@ -91,7 +91,18 @@ static double fmodulo (double v1, double v2)
 static PIX imodulo (PIX v1, PIX v2)
   { PIX v=v1%v2; return (v>=0) ? v : v+v2; }
 static int isqrt(PIX v)
-  { return (int)(sqrt(v+0.5)); }
+  { 
+    /* I don't think we will overflow an int*/
+    int res = sqrt(v+0.5); 
+#ifdef HIGH_RESOLUTION
+    if (arg<(int64(1)<<50)) return res;
+    if (res*res>arg)
+      --res;
+    else if ((res+1)*(res+1)<=arg)
+      ++res;
+#endif
+    return res;
+  }
 
 /* ctab[m] = (short)(
        (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
