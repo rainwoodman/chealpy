@@ -35,11 +35,6 @@
 #endif
 #include "chealpix.h"
 
-#ifdef HIGH_RESOLUTION
-typedef long PIX;
-#else
-typedef int PIX;
-#endif
 static const double twothird=2.0/3.0;
 static const double pi=3.141592653589793238462643383279502884197;
 static const double twopi=6.283185307179586476925286766559005768394;
@@ -88,15 +83,15 @@ static double fmodulo (double v1, double v2)
 /*! Returns the remainder of the division \a v1/v2.
     The result is non-negative.
     \a v1 can be positive or negative; \a v2 must be positive. */
-static PIX imodulo (PIX v1, PIX v2)
-  { PIX v=v1%v2; return (v>=0) ? v : v+v2; }
-static int isqrt(PIX v)
+static int imodulo (int v1, int v2)
+  { int v=v1%v2; return (v>=0) ? v : v+v2; }
+static int isqrt(int v)
   { return (int)(sqrt(v+0.5)); }
 
 /* ctab[m] = (short)(
        (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
     | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4)); */
-static const unsigned short ctab[]={
+static const short ctab[]={
   0,1,256,257,2,3,258,259,512,513,768,769,514,515,770,771,4,5,260,261,6,7,262,
   263,516,517,772,773,518,519,774,775,1024,1025,1280,1281,1026,1027,1282,1283,
   1536,1537,1792,1793,1538,1539,1794,1795,1028,1029,1284,1285,1030,1031,1286,
@@ -116,7 +111,7 @@ static const unsigned short ctab[]={
 /* utab[m] = (short)(
       (m&0x1 )       | ((m&0x2 ) << 1) | ((m&0x4 ) << 2) | ((m&0x8 ) << 3)
     | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7)); */
-static const unsigned short utab[]={
+static const short utab[]={
   0,1,4,5,16,17,20,21,64,65,68,69,80,81,84,85,256,257,260,261,272,273,276,277,
   320,321,324,325,336,337,340,341,1024,1025,1028,1029,1040,1041,1044,1045,1088,
   1089,1092,1093,1104,1105,1108,1109,1280,1281,1284,1285,1296,1297,1300,1301,
@@ -136,59 +131,32 @@ static const unsigned short utab[]={
   21573,21584,21585,21588,21589,21760,21761,21764,21765,21776,21777,21780,21781,
   21824,21825,21828,21829,21840,21841,21844,21845 };
 
-static const PIX jrll[] = { 2,2,2,2,3,3,3,3,4,4,4,4 };
-static const PIX jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
-typedef unsigned char uchar;
+static const int jrll[] = { 2,2,2,2,3,3,3,3,4,4,4,4 };
+static const int jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
 
-static PIX xyf2nest(PIX nside, int ix, int iy, int face_num)
+static int xyf2nest (int nside, int ix, int iy, int face_num)
   {
-  return (((PIX)face_num)*nside*nside) +
-      (  ((PIX)utab[(uchar) ix      ])
-       | ((PIX)utab[(uchar)(ix>> 8 )]<<16)
-#ifdef HIGH_RESOLUTION
-       | ((PIX)utab[(uchar)(ix>> 16)]<<32)
-       | ((PIX)utab[(uchar)(ix>> 24)]<<48)
-#endif
-       | ((PIX)utab[(uchar) iy      ]<<1)
-       | ((PIX)utab[(uchar)(iy>> 8 )]<<17)
-#ifdef HIGH_RESOLUTION
-       | ((PIX)utab[(uchar)(iy>> 16 )]<<33)
-       | ((PIX)utab[(uchar)(iy>> 24 )]<<49)
-#endif
-      );
+  return (face_num*nside*nside) +
+      (utab[ix&0xff] | (utab[ix>>8]<<16)
+    | (utab[iy&0xff]<<1) | (utab[iy>>8]<<17));
   }
-static void nest2xyf (PIX nside, PIX pix, int *ix, int *iy, int *face_num)
+static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
   {
-  PIX npface_=(PIX)nside*nside, raw;
+  int npface_=nside*nside, raw;
   *face_num = pix/npface_;
   pix &= (npface_-1);
-  raw = (pix &(PIX)0x0000555500005555) 
-     | ((pix &(PIX)0x5555000055550000)>>15);
-  *ix = (PIX)ctab[(uchar) raw    ] 
-     | ((PIX)ctab[(uchar)(raw>>8)] <<4)
-#ifdef HIGH_RESOLUTION
-     | ((PIX)ctab[(uchar)(raw>>32)] <<16)
-     | ((PIX)ctab[(uchar)(raw>>40)] <<20)
-#endif
-     ;
+  raw = (pix&0x5555) | ((pix&0x55550000)>>15);
+  *ix = ctab[raw&0xff] | (ctab[raw>>8]<<4);
   pix >>= 1;
-  raw = (pix &(PIX)0x0000555500005555) 
-     | ((pix &(PIX)0x5555000055550000)>>15);
-  *iy = (PIX)ctab[(uchar) raw    ] 
-     | ((PIX)ctab[(uchar)(raw>>8)] <<4)
-#ifdef HIGH_RESOLUTION
-     | ((PIX)ctab[(uchar)(raw>>32)] <<16)
-     | ((PIX)ctab[(uchar)(raw>>40)] <<20)
-#endif
-     ;
+  raw = (pix&0x5555) | ((pix&0x55550000)>>15);
+  *iy = ctab[raw&0xff] | (ctab[raw>>8]<<4);
   }
-static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
+static int xyf2ring (int nside_, int ix, int iy, int face_num)
   {
-  PIX nl4 = 4* nside_;
-  PIX jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
+  int nl4 = 4*nside_;
+  int jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
 
-  PIX nr, n_before;
-  int kshift;
+  int nr, kshift, n_before;
   if (jr<nside_)
     {
     nr = jr;
@@ -203,7 +171,7 @@ static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
     }
   else
     {
-    PIX ncap_=2*nside_*(nside_-1);
+    int ncap_=2*nside_*(nside_-1);
     nr = nside_;
     n_before = ncap_ + (jr-nside_)*nl4;
     kshift = (jr-nside_)&1;
@@ -217,16 +185,16 @@ static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
 
   return n_before + jp - 1;
   }
-static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
+static void ring2xyf (int nside_, int pix, int *ix, int *iy, int *face_num)
   {
-  PIX iring, iphi, kshift, nr, tmp, irt, ipt;
-  PIX ncap_=2*nside_*(nside_-1);
-  PIX npix_=12*nside_*nside_;
-  PIX nl2 = 2*nside_;
+  int iring, iphi, kshift, nr, tmp, irt, ipt;
+  int ncap_=2*nside_*(nside_-1);
+  int npix_=12*nside_*nside_;
+  int nl2 = 2*nside_;
 
   if (pix<ncap_) /* North Polar cap */
     {
-    iring = (0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
+    iring = (int)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
     iphi  = (pix+1) - 2*iring*(iring-1);
     kshift = 0;
     nr = iring;
@@ -241,9 +209,9 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
     }
   else if (pix<(npix_-ncap_)) /* Equatorial region */
     {
-    PIX ire, irm;
-    PIX ifm, ifp;
-    PIX ip = pix - ncap_;
+    unsigned int ire, irm;
+    int ifm, ifp;
+    int ip = pix - ncap_;
     iring = (ip/(4*nside_)) + nside_; /* counted from North pole */
     iphi  = (ip%(4*nside_)) + 1;
     kshift = (iring+nside_)&1;
@@ -261,8 +229,8 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
     }
   else /* South Polar cap */
     {
-    PIX ip = npix_ - pix;
-    iring = (0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
+    int ip = npix_ - pix;
+    iring = (int)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
     iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
     kshift = 0;
     nr = iring;
@@ -285,7 +253,7 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
   *iy =(-(ipt+irt))>>1;
   }
 
-static PIX ang2pix_nest_z_phi (PIX nside_, double z, double phi)
+static int ang2pix_nest_z_phi (long nside_, double z, double phi)
   {
   double za = fabs(z);
   double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
@@ -295,8 +263,8 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double phi)
     {
     double temp1 = nside_*(0.5+tt);
     double temp2 = nside_*(z*0.75);
-    PIX jp = (PIX)(temp1-temp2); /* index of  ascending edge line */
-    PIX jm = (PIX)(temp1+temp2); /* index of descending edge line */
+    int jp = (int)(temp1-temp2); /* index of  ascending edge line */
+    int jm = (int)(temp1+temp2); /* index of descending edge line */
     int ifp = jp/nside_;  /* in {0,4} */
     int ifm = jm/nside_;
     if (ifp == ifm)           /* faces 4 to 7 */
@@ -311,14 +279,14 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double phi)
     }
   else /* polar region, za > 2/3 */
     {
-    PIX ntt = (PIX)tt, jp, jm;
+    int ntt = (int)tt, jp, jm;
     double tp, tmp;
     if (ntt>=4) ntt=3;
     tp = tt-ntt;
     tmp = nside_*sqrt(3*(1-za));
 
-    jp = (PIX)(tp*tmp); /* increasing edge line index */
-    jm = (PIX)((1.0-tp)*tmp); /* decreasing edge line index */
+    jp = (int)(tp*tmp); /* increasing edge line index */
+    jm = (int)((1.0-tp)*tmp); /* decreasing edge line index */
     if (jp>=nside_) jp = nside_-1; /* for points too close to the boundary */
     if (jm>=nside_) jm = nside_-1;
     if (z >= 0)
@@ -338,7 +306,7 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double phi)
   return xyf2nest(nside_,ix,iy,face_num);
   }
 
-static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
+static int ang2pix_ring_z_phi (long nside_, double z, double phi)
   {
   double za = fabs(z);
   double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
@@ -347,14 +315,14 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
     {
     double temp1 = nside_*(0.5+tt);
     double temp2 = nside_*z*0.75;
-    PIX jp = (PIX)(temp1-temp2); /* index of  ascending edge line */
-    PIX jm = (PIX)(temp1+temp2); /* index of descending edge line */
+    int jp = (int)(temp1-temp2); /* index of  ascending edge line */
+    int jm = (int)(temp1+temp2); /* index of descending edge line */
 
     /* ring number counted from z=2/3 */
-    PIX ir = nside_ + 1 + jp - jm; /* in {1,2n+1} */
+    int ir = nside_ + 1 + jp - jm; /* in {1,2n+1} */
     int kshift = 1-(ir&1); /* kshift=1 if ir even, 0 otherwise */
 
-    PIX ip = (jp+jm-nside_+kshift+1)/2; /* in {0,4n-1} */
+    int ip = (jp+jm-nside_+kshift+1)/2; /* in {0,4n-1} */
     ip = imodulo(ip,4*nside_);
 
     return nside_*(nside_-1)*2 + (ir-1)*4*nside_ + ip;
@@ -364,11 +332,11 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
     double tp = tt-(int)(tt);
     double tmp = nside_*sqrt(3*(1-za));
 
-    PIX jp = (PIX)(tp*tmp); /* increasing edge line index */
-    PIX jm = (PIX)((1.0-tp)*tmp); /* decreasing edge line index */
+    int jp = (int)(tp*tmp); /* increasing edge line index */
+    int jm = (int)((1.0-tp)*tmp); /* decreasing edge line index */
 
-    PIX ir = jp+jm+1; /* ring number counted from the closest pole */
-    PIX ip = (PIX)(tt*ir); /* in {0,4*ir-1} */
+    int ir = jp+jm+1; /* ring number counted from the closest pole */
+    int ip = (int)(tt*ir); /* in {0,4*ir-1} */
     ip = imodulo(ip,4*ir);
 
     if (z>0)
@@ -378,15 +346,15 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
     }
   }
 
-static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double *phi)
+static void pix2ang_ring_z_phi (int nside_, int pix, double *z, double *phi)
   {
-  PIX ncap_=nside_*(nside_-1)*2;
-  PIX npix_=12*nside_*nside_;
+  long ncap_=nside_*(nside_-1)*2;
+  long npix_=12*nside_*nside_;
   double fact2_  = 4./npix_;
   if (pix<ncap_) /* North Polar cap */
     {
-    PIX iring = (PIX)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
-    PIX iphi  = (pix+1) - 2*iring*(iring-1);
+    int iring = (int)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
+    int iphi  = (pix+1) - 2*iring*(iring-1);
 
     *z = 1.0 - (iring*iring)*fact2_;
     *phi = (iphi-0.5) * halfpi/iring;
@@ -394,34 +362,33 @@ static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double *phi)
   else if (pix<(npix_-ncap_)) /* Equatorial region */
     {
     double fact1_  = (nside_<<1)*fact2_;
-    PIX ip  = pix - ncap_;
-    PIX iring = ip/(4*nside_) + nside_; /* counted from North pole */
-    PIX iphi  = ip%(4*nside_) + 1;
+    int ip  = pix - ncap_;
+    int iring = ip/(4*nside_) + nside_; /* counted from North pole */
+    int iphi  = ip%(4*nside_) + 1;
     /* 1 if iring+nside is odd, 1/2 otherwise */
     double fodd = ((iring+nside_)&1) ? 1 : 0.5;
 
-    PIX nl2 = 2*nside_;
+    int nl2 = 2*nside_;
     *z = (nl2-iring)*fact1_;
     *phi = (iphi-fodd) * pi/nl2;
     }
   else /* South Polar cap */
     {
-    PIX ip = npix_ - pix;
-    PIX iring = (PIX)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
-    PIX iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
+    int ip = npix_ - pix;
+    int iring = (int)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
+    int iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
 
     *z = -1.0 + (iring*iring)*fact2_;
     *phi = (iphi-0.5) * halfpi/iring;
     }
   }
 
-static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *phi)
+static void pix2ang_nest_z_phi (int nside_, int pix, double *z, double *phi)
   {
-  PIX nl4 = nside_*4;
-  PIX npix_=12*nside_*nside_;
+  int nl4 = nside_*4;
+  int npix_=12*nside_*nside_;
   double fact2_ = 4./npix_;
-  int face_num, ix, iy, kshift;
-  PIX jr, nr, jp;
+  int face_num, ix, iy, jr, nr, kshift, jp;
 
   nest2xyf(nside_,pix,&ix,&iy,&face_num);
   jr = (jrll[face_num]*nside_) - ix - iy - 1;
@@ -500,6 +467,7 @@ static void setCoordSysHP(char coordsys,char *coordsys9)
                     "(Galactic,Ecliptic,Celestial=Equatorial). "
                     " Celestial system was set.\n", __FILE__, __LINE__);
   }
+
 float *read_healpix_map(const char *infile, long *nside, char *coordsys,
   char *ordering)
   {
@@ -621,7 +589,9 @@ void write_healpix_map (const float *signal, long nside, const char *filename,
   fits_close_file(fptr, &status);
   printerror(status);
   }
+
 #endif
+
 void ang2pix_ring(long nside, double theta, double phi, long *ipix)
   {
   *ipix=ang2pix_ring_z_phi (nside,cos(theta),phi);
