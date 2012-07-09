@@ -44,6 +44,9 @@ extern "C" {
 #define HEALPIX_NULLVAL (-1.6375e30)
 #endif /* HEALPIX_NULLVAL */
 
+
+
+
 /* pixel operations */
 /* ---------------- */
 void ang2pix_nest(long nside, double theta, double phi, long *ipix);
@@ -66,7 +69,6 @@ void vec2pix_ring(long nside, const double *vec, long *ipix);
 
 void pix2vec_nest(long nside, long ipix, double *vec);
 void pix2vec_ring(long nside, long ipix, double *vec);
-
 
 /* FITS operations */
 /* --------------- */

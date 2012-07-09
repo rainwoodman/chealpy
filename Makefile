@@ -13,6 +13,8 @@
 # where
 #  CC     is the C compiler you want to use (default: gcc)
 #  OPT    compilation option
+#  WITH_HIGHRES=1   : use long for internal calculation, nside up to 1<<28 on x64; 
+#                     otherwise nside up to 8192
 #  WITHOUT_CFITSIO=1: cfitsio integration will not be built
 #  CFITSIO_INCDIR is where the header files for the 'cfitsio' library is kept
 #  CFITSIO_LIBDIR is where the 'cfitsio' library archive is kept
@@ -76,6 +78,10 @@ ifeq ($(WITHOUT_CFITSIO), 0)
   CFITSIO_LIBS += -lcfitsio
 endif
 
+ifeq ($(WITH_HIGHRES), 1)
+  FLAGS += -DHIGH_RESOLUTION
+endif
+
 PIC = -fPIC
 #
 SHLIB_LD =      $(CC) $(FLAGS) $(PIC) -shared
@@ -135,7 +141,7 @@ test_chealpix : test_chealpix.c static
 	$(CC) $(FLAGS) -o $@ test_chealpix.o -L. -lchealpix $(CFITSIO_LIBS) -lm
 
 tests : test_chealpix
-	./test_chealpix
+	time ./test_chealpix
 
 #
 # General compilation rules

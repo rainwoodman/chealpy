@@ -38,12 +38,17 @@ void test1(void) {
   double vec[3];
   long   nside;
   long  ipix, npix, dpix, ip2, ip1;
+  int ix, iy, facenum, ix2, iy2, facenum2;
 
   printf("Starting C Healpix pixel routines test\n");
 
-  nside = 1024;
-  dpix = 23;
-
+  #ifdef HIGH_RESOLUTION
+  nside = 1<<13;
+  dpix = 3 * (1L<<8)- 1;
+  #else
+  nside = 1<<13;
+  dpix = 3 * (1L<<8)- 1;
+  #endif
   /* Find the number of pixels in the full map */
   npix = nside2npix(nside);
   printf("Number of pixels in full map: %ld\n", npix);
