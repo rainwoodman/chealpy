@@ -95,10 +95,10 @@ static int isqrt(PIX v)
     /* I don't think we will overflow an int*/
     int res = sqrt(v+0.5); 
 #ifdef HIGH_RESOLUTION
-    if (arg<(int64(1)<<50)) return res;
-    if (res*res>arg)
+    if (v<(1LL<<50)) return res;
+    if (res*res>v)
       --res;
-    else if ((res+1)*(res+1)<=arg)
+    else if ((res+1)*(res+1)<=v)
       ++res;
 #endif
     return res;

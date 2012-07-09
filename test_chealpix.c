@@ -43,8 +43,16 @@ void test1(void) {
   printf("Starting C Healpix pixel routines test\n");
 
   #ifdef HIGH_RESOLUTION
-  nside = 1<<13;
-  dpix = 3 * (1L<<8)- 1;
+
+  for(nside = 1; nside <= 1<<29; nside=nside<<1) {
+    pix2ang_ring(nside, 1, &theta, &phi);
+    printf("%d, %g, %g\n", nside, theta, phi);
+  }
+  #endif
+
+  #ifdef HIGH_RESOLUTION
+  nside = 1<<29;
+  dpix = 3 * (1L<<31)- 1;
   #else
   nside = 1<<13;
   dpix = 3 * (1L<<8)- 1;
