@@ -45,6 +45,7 @@ static const double pi=3.141592653589793238462643383279502884197;
 static const double twopi=6.283185307179586476925286766559005768394;
 static const double halfpi=1.570796326794896619231321691639751442099;
 static const double inv_halfpi=0.6366197723675813430755350534900574;
+static const double preccut = 0.99;
 
 static void util_fail_ (const char *file, int line, const char *func,
   const char *msg)
@@ -661,15 +662,12 @@ void pix2ang_ring(long nside, long ipix, double *theta, double *phi)
   {
   double z, z1;
   pix2ang_ring_z_phi (nside,ipix,&z,&z1,phi);
-  if(z == 1.0) {
-   *theta = asin(sqrt(z1 * 0.5)) * 2;
-   return;
-  }
-  if(z == -1.0) {
-   *theta = asin(sqrt(z1 * 0.5)) * 2 + halfpi;
-   return;
-  }
-  *theta=acos(z);
+  if(z >= preccut) {
+    *theta=asin(sqrt(z1 * 0.5)) * 2;
+  } else if(z <= -preccut) {
+    *theta=asin(sqrt(z1 * 0.5)) * 2 + halfpi;
+  } else
+    *theta=acos(z);
   }
 void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
   {
@@ -681,10 +679,10 @@ void pix2vec_ring(long nside, long ipix, double *vec)
   {
   double z, z1, phi, stheta;
   pix2ang_ring_z_phi (nside,ipix,&z, &z1, &phi);
-  if(z == 1.0) {
-    stheta = sqrt(2.0 * z1);
-  } else if(z == -1.0) {
-    stheta = sqrt(2.0 * z1);
+  if(z >= preccut) {
+    stheta = sqrt((1.0 + z) * z1);
+  } else if(z <= -preccut) {
+    stheta = sqrt((1.0 - z) * z1);
   } else {
     stheta=sqrt((1.-z)*(1.+z));
   }
