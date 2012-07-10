@@ -44,6 +44,8 @@ void test1(void) {
 
   #ifdef HIGH_RESOLUTION
 
+  pix2ang_ring(1<<26, 53772979791808431, &theta, &phi);
+  printf("%.17g %.17g\n", theta, phi);
   for(nside = 1; nside <= 1<<29; nside=nside<<1) {
     pix2ang_ring(nside, 1, &theta, &phi);
     if(theta == 0) {
@@ -60,7 +62,7 @@ void test1(void) {
 
   #ifdef HIGH_RESOLUTION
   nside = 1<<29;
-  dpix = 3 * (1L<<31)- 1;
+  dpix = 3 * (1L<<36) - 1;
   #else
   nside = 1<<13;
   dpix = 3 * (1L<<8)- 1;
@@ -70,8 +72,17 @@ void test1(void) {
   printf("Number of pixels in full map: %ld\n", npix);
 
   printf("dpix: %ld\n", dpix);
+
+  printf("Ring -> ang -> Ring\n");
+  for (ipix = 1; ipix < npix; ipix +=dpix +rand()) {
+    pix2ang_ring(nside, ipix, &theta, &phi);
+    ang2pix_ring(nside, theta, phi, &ip1);
+    if (ip1 != ipix) {
+      printf("Error: %ld %ld %g %g %ld\n",nside,ipix,theta,phi,ip1);
+    }
+  }
   printf("Nest -> ang -> vec -> ang -> Ring -> Nest\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix) {
+  for (ipix = 1; ipix < npix; ipix +=dpix + rand()) {
     pix2ang_nest(nside, ipix, &theta, &phi);
     ang2vec(theta, phi, vec);
     vec2ang(vec, &theta, &phi);
@@ -79,26 +90,29 @@ void test1(void) {
     ring2nest(nside,ip2,&ip1);
     if (ip1 != ipix) {
       printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
-      abort();
+      break;
     }
   }
   printf("Ring -> ang -> Nest -> Ring\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix) {
+  for (ipix = 1; ipix < npix; ipix +=dpix+rand()) {
     pix2ang_ring(nside, ipix, &theta, &phi);
     ang2pix_nest(nside, theta, phi, &ip2);
     nest2ring(nside,ip2,&ip1);
-    if (ip1 != ipix) {printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);}
+    if (ip1 != ipix) {
+      printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
+      break;
+    }
   }
 
   printf("Nest -> vec -> Ring -> Nest\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix) {
+  for (ipix = 0; ipix < npix; ipix +=dpix+rand()) {
     pix2vec_nest(nside, ipix, vec);
     vec2pix_ring(nside, vec, &ip2);
     ring2nest(nside,ip2,&ip1);
     if (ip1 != ipix) {printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);}
   }
   printf("Ring -> vec -> Nest -> Ring\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix) {
+  for (ipix = 0; ipix < npix; ipix +=dpix+rand()) {
     pix2vec_ring(nside, ipix, vec);
     vec2pix_nest(nside, vec, &ip2);
     nest2ring(nside,ip2,&ip1);
