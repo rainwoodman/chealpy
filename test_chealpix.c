@@ -46,7 +46,15 @@ void test1(void) {
 
   for(nside = 1; nside <= 1<<29; nside=nside<<1) {
     pix2ang_ring(nside, 1, &theta, &phi);
-    printf("%d, %g, %g\n", nside, theta, phi);
+    if(theta == 0) {
+      printf("RING: %d, %g, %g\n", nside, theta, phi);
+      abort();
+    }
+    pix2ang_nest(nside, 1, &theta, &phi);
+    if(theta == 0) {
+      printf("NEST: %d, %g, %g\n", nside, theta, phi);
+      abort();
+    }
   }
   #endif
 

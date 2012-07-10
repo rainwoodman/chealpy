@@ -105,6 +105,25 @@ static int isqrt(PIX v)
     return res;
   }
 
+static double z2theta(double z, double z1)
+  {
+  if(z >= preccut) {
+    return asin(sqrt(z1 * 0.5)) * 2;
+  } else if(z <= -preccut) {
+    return asin(sqrt(z1 * 0.5)) * 2 + halfpi;
+  } else
+    return acos(z);
+  }
+static double z2stheta(double z, double z1)
+  {
+  if(z >= preccut) {
+    return sqrt((1.0 + z) * z1);
+  } else if(z <= -preccut) {
+    return sqrt((1.0 - z) * z1);
+  } else {
+    return sqrt((1.-z)*(1.+z));
+  }
+  }
 /* ctab[m] = (short)(
        (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
     | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4)); */
@@ -390,9 +409,9 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double phi)
     }
   }
 
-/* z1 is 1 - z for North Polar cap,
- *       undefined for equatorial region
- *       1 + z for Sourth Polar cap
+/* z1 = 1 - z for North Polar cap, z ~ 1
+ *    =   undefined for equatorial region
+ *    = 1 + z for Sourth Polar cap, z ~ -1
  **/
 static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double * z1, double *phi)
   {
@@ -433,7 +452,11 @@ static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double * z1, dou
     }
   }
 
-static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *phi)
+/** z1 = 1 - z if z is near 1
+ *     = 1 + z if z is near -1
+ *     = undefined if z is otherwise
+ */
+static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *z1, double *phi)
   {
   PIX nl4 = nside_*4;
   PIX npix_=12*nside_*nside_;
@@ -447,13 +470,15 @@ static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *phi)
   if (jr<nside_)
     {
     nr = jr;
-    *z = 1 - nr*nr*fact2_;
+    *z1 = nr*nr*fact2_;
+    *z = 1 - *z1;
     kshift = 0;
     }
   else if (jr > 3*nside_)
     {
     nr = nl4-jr;
-    *z = nr*nr*fact2_ - 1;
+    *z1 = nr*nr*fact2_;
+    *z = *z1 - 1;
     kshift = 0;
     }
   else
@@ -662,39 +687,28 @@ void pix2ang_ring(long nside, long ipix, double *theta, double *phi)
   {
   double z, z1;
   pix2ang_ring_z_phi (nside,ipix,&z,&z1,phi);
-  if(z >= preccut) {
-    *theta=asin(sqrt(z1 * 0.5)) * 2;
-  } else if(z <= -preccut) {
-    *theta=asin(sqrt(z1 * 0.5)) * 2 + halfpi;
-  } else
-    *theta=acos(z);
+  *theta=z2theta(z, z1);
   }
 void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
   {
-  double z;
-  pix2ang_nest_z_phi (nside,ipix,&z,phi);
-  *theta=acos(z);
+  double z, z1;
+  pix2ang_nest_z_phi (nside,ipix,&z,&z1,phi);
+  *theta=z2theta(z, z1);
   }
 void pix2vec_ring(long nside, long ipix, double *vec)
   {
   double z, z1, phi, stheta;
   pix2ang_ring_z_phi (nside,ipix,&z, &z1, &phi);
-  if(z >= preccut) {
-    stheta = sqrt((1.0 + z) * z1);
-  } else if(z <= -preccut) {
-    stheta = sqrt((1.0 - z) * z1);
-  } else {
-    stheta=sqrt((1.-z)*(1.+z));
-  }
+  stheta=z2stheta(z, z1);
   vec[0]=stheta*cos(phi);
   vec[1]=stheta*sin(phi);
   vec[2]=z;
   }
 void pix2vec_nest(long nside, long ipix, double *vec)
   {
-  double z, phi, stheta;
-  pix2ang_nest_z_phi (nside,ipix,&z,&phi);
-  stheta=sqrt((1.-z)*(1.+z));
+  double z, z1, phi, stheta;
+  pix2ang_nest_z_phi (nside,ipix,&z,&z1,&phi);
+  stheta=z2stheta(z, z1);
   vec[0]=stheta*cos(phi);
   vec[1]=stheta*sin(phi);
   vec[2]=z;
