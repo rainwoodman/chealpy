@@ -24,65 +24,206 @@
  *
  *  For more information about HEALPix see http://healpix.jpl.nasa.gov
  *
- *----------------------------------------------------------------------------- */
+ *--------------------------------------------------------------------------- */
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "chealpix.h"
 
-void test1(void) {
+static void test1_helper1 (long nside, long dpix)
+  {
+  double theta, phi;
+  double vec[3];
+  long  ipix, npix, ip2, ip1;
+
+  /* Find the number of pixels in the full map */
+  npix = nside2npix(nside);
+
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    nest2ring(nside, ipix, &ip2);
+    ring2nest(nside,ip2,&ip1);
+    if (ip1 != ipix) {
+      printf("Error0: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2ang_nest(nside, ipix, &theta, &phi);
+    ang2pix_nest(nside, theta, phi, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %ld %ld %ld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2vec_nest(nside, ipix, vec);
+    vec2pix_nest(nside, vec, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %ld %ld %ld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  }
+
+static void test1_helper2 (long nside, long dpix)
+  {
+  double theta, phi;
+  double vec[3];
+  long  ipix, npix, ip1;
+
+  /* Find the number of pixels in the full map */
+  npix = nside2npix(nside);
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2ang_ring(nside, ipix, &theta, &phi);
+    ang2pix_ring(nside, theta, phi, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %ld %ld %ld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2vec_ring(nside, ipix, vec);
+    vec2pix_ring(nside, vec, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %ld %ld %ld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  }
+
+static void test1(void) {
+
+  hpint64  nside;
+  int i;
+
+  printf("Starting C Healpix pixel routines test for normal nsides\n");
+
+  for (i=0; i<=13; ++i)
+    {
+    nside = 1LL<<i;
+    printf("Nside: %lld\n",nside);
+    test1_helper1(nside,nside*nside/123456+1);
+    test1_helper2(nside,nside*nside/123456+1);
+    }
+
+  for (i=0; i<=12; ++i)
+    {
+    nside = (1LL<<i)+5;
+    printf("Nside: %lld\n",nside);
+    test1_helper2(nside,nside*nside/123456+1);
+    }
+
+  printf("test completed\n\n");
+}
+
+static void test2_helper1 (hpint64 nside, hpint64 dpix)
+  {
+  double theta, phi;
+  double vec[3];
+  hpint64  ipix, npix, ip2, ip1;
+
+  /* Find the number of pixels in the full map */
+  npix = nside2npix64(nside);
+
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    nest2ring64(nside, ipix, &ip2);
+    ring2nest64(nside,ip2,&ip1);
+    if (ip1 != ipix) {
+      printf("Error0: %lld %lld %lld %lld\n",nside,ipix,ip2,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2ang_nest64(nside, ipix, &theta, &phi);
+    ang2pix_nest64(nside, theta, phi, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %lld %lld %lld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2vec_nest64(nside, ipix, vec);
+    vec2pix_nest64(nside, vec, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %lld %lld %lld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  }
+
+static void test2_helper2 (hpint64 nside, hpint64 dpix)
+  {
+  double theta, phi;
+  double vec[3];
+  hpint64  ipix, npix, ip1;
+
+  /* Find the number of pixels in the full map */
+  npix = nside2npix64(nside);
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2ang_ring64(nside, ipix, &theta, &phi);
+    ang2pix_ring64(nside, theta, phi, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %lld %lld %lld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
+    pix2vec_ring64(nside, ipix, vec);
+    vec2pix_ring64(nside, vec, &ip1);
+    if (ip1 != ipix) {
+      printf("Error1: %lld %lld %lld\n",nside,ipix,ip1);
+      abort();
+    }
+  }
+  }
+
+static void test2(void) {
+
+  hpint64  nside;
+  int i;
+
+  printf("Starting C Healpix pixel routines test for high nsides\n");
+
+  for (i=0; i<=29; ++i)
+    {
+    nside = 1LL<<i;
+    printf("Nside: %lld\n",nside);
+    test2_helper1(nside,nside*nside/123456+1);
+    test2_helper2(nside,nside*nside/123456+1);
+    }
+
+  for (i=0; i<=28; ++i)
+    {
+    nside = (1LL<<i)+5;
+    printf("Nside: %lld\n",nside);
+    test2_helper2(nside,nside*nside/123456+1);
+    }
+
+  printf("test completed\n\n");
+}
+
+static void test3(void) {
 
   double theta, phi;
   double vec[3];
   long   nside;
   long  ipix, npix, dpix, ip2, ip1;
-  int ix, iy, facenum, ix2, iy2, facenum2;
 
   printf("Starting C Healpix pixel routines test\n");
 
-  #ifdef HIGH_RESOLUTION
+  nside = 1024;
+  dpix = 23;
 
-  pix2ang_ring(1<<26, 53772979791808431, &theta, &phi);
-  printf("%.17g %.17g\n", theta, phi);
-  for(nside = 1; nside <= 1<<29; nside=nside<<1) {
-    pix2ang_ring(nside, 1, &theta, &phi);
-    if(theta == 0) {
-      printf("RING: %d, %g, %g\n", nside, theta, phi);
-      abort();
-    }
-    pix2ang_nest(nside, 1, &theta, &phi);
-    if(theta == 0) {
-      printf("NEST: %d, %g, %g\n", nside, theta, phi);
-      abort();
-    }
-  }
-  #endif
-
-  #ifdef HIGH_RESOLUTION
-  nside = 1<<29;
-  dpix = 3 * (1L<<36) - 1;
-  #else
-  nside = 1<<13;
-  dpix = 3 * (1L<<8)- 1;
-  #endif
   /* Find the number of pixels in the full map */
   npix = nside2npix(nside);
   printf("Number of pixels in full map: %ld\n", npix);
 
   printf("dpix: %ld\n", dpix);
-
-  printf("Ring -> ang -> Ring\n");
-  for (ipix = 1; ipix < npix; ipix +=dpix +rand()) {
-    pix2ang_ring(nside, ipix, &theta, &phi);
-    ang2pix_ring(nside, theta, phi, &ip1);
-    if (ip1 != ipix) {
-      printf("Error: %ld %ld %g %g %ld\n",nside,ipix,theta,phi,ip1);
-    }
-  }
   printf("Nest -> ang -> vec -> ang -> Ring -> Nest\n");
-  for (ipix = 1; ipix < npix; ipix +=dpix + rand()) {
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
     pix2ang_nest(nside, ipix, &theta, &phi);
     ang2vec(theta, phi, vec);
     vec2ang(vec, &theta, &phi);
@@ -90,29 +231,26 @@ void test1(void) {
     ring2nest(nside,ip2,&ip1);
     if (ip1 != ipix) {
       printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
-      break;
+      abort();
     }
   }
   printf("Ring -> ang -> Nest -> Ring\n");
-  for (ipix = 1; ipix < npix; ipix +=dpix+rand()) {
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
     pix2ang_ring(nside, ipix, &theta, &phi);
     ang2pix_nest(nside, theta, phi, &ip2);
     nest2ring(nside,ip2,&ip1);
-    if (ip1 != ipix) {
-      printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);
-      break;
-    }
+    if (ip1 != ipix) {printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);}
   }
 
   printf("Nest -> vec -> Ring -> Nest\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix+rand()) {
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
     pix2vec_nest(nside, ipix, vec);
     vec2pix_ring(nside, vec, &ip2);
     ring2nest(nside,ip2,&ip1);
     if (ip1 != ipix) {printf("Error: %ld %ld %ld %ld\n",nside,ipix,ip2,ip1);}
   }
   printf("Ring -> vec -> Nest -> Ring\n");
-  for (ipix = 0; ipix < npix; ipix +=dpix+rand()) {
+  for (ipix = 0; ipix < npix; ipix +=dpix) {
     pix2vec_ring(nside, ipix, vec);
     vec2pix_nest(nside, vec, &ip2);
     nest2ring(nside,ip2,&ip1);
@@ -124,7 +262,7 @@ void test1(void) {
 }
 
 #ifdef ENABLE_FITSIO
-void test2 (void) {
+static void test4 (void) {
   float *map;
   long nside, npix, np, ns;
   int i;
@@ -146,7 +284,7 @@ void test2 (void) {
     map[i] = 2.*i;
   }
 
-  sprintf(fileforce, "!%s",file); // leading ! to allow overwrite
+  sprintf(fileforce, "!%s",file); /* leading ! to allow overwrite */
   write_healpix_map( map, nside, fileforce, 1, "C");
   fprintf(stdout,"file written\n");
   free(map);
@@ -169,8 +307,10 @@ void test2 (void) {
 
 int main(void) {
   test1();
-#ifdef ENABLE_FITSIO
   test2();
+  test3();
+#ifdef ENABLE_FITSIO
+  test4();
 #endif
   return 0;
 }

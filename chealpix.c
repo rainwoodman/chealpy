@@ -35,18 +35,12 @@
 #endif
 #include "chealpix.h"
 
-#ifdef HIGH_RESOLUTION
-typedef long PIX;
-#else
-typedef int PIX;
-#endif
 static const double twothird=2.0/3.0;
 static const double pi=3.141592653589793238462643383279502884197;
 static const double twopi=6.283185307179586476925286766559005768394;
 static const double halfpi=1.570796326794896619231321691639751442099;
 static const double inv_halfpi=0.6366197723675813430755350534900574;
-static const double preccut = 0.99;
-#define INVALIDS 1000
+
 static void util_fail_ (const char *file, int line, const char *func,
   const char *msg)
   {
@@ -89,67 +83,15 @@ static double fmodulo (double v1, double v2)
 /*! Returns the remainder of the division \a v1/v2.
     The result is non-negative.
     \a v1 can be positive or negative; \a v2 must be positive. */
-static PIX imodulo (PIX v1, PIX v2)
-  { PIX v=v1%v2; return (v>=0) ? v : v+v2; }
-static int isqrt(PIX v)
-  { 
-    /* I don't think we will overflow an int*/
-    PIX res = sqrt(v+0.5); 
-#ifdef HIGH_RESOLUTION
-    if (v<(1LL<<50)) return res;
-    if (res*res>v)
-      --res;
-    else if ((res+1)*(res+1)<=v)
-      ++res;
-#endif
-    return res;
-  }
-static double z2theta(double z, double s)
-  {
-  if(s != INVALIDS) {
-    return (double) atan2(s, z);
-  } else {
-    return (double) acos(z);
-  }
-  }
-static void vec2z_phi(const double*vec, double *z, double * s, double * phi)
-  {
-    double xxyy=vec[0]*vec[0]+vec[1]*vec[1];
-    double xxyyzz=xxyy+vec[2]*vec[2];
-    double vlen=sqrt(xxyyzz);
-    *z=(double)(vec[2]/vlen);
-    *phi=(double)atan2(vec[1],vec[0]);
-    if(fabs(*z) >= preccut) {
-      *s = (double) (sqrt(xxyy) / vlen);
-    } else {
-      /* *s is undefined */
-      *s = INVALIDS;
-    }
-    
-  }
-static void theta2z(double theta, double * z, double * s)
-  {
-    *z = (double) cos(theta);
-//    if(theta <= 0.01 || theta >= pi - 0.01) {
-    if(fabs(*z) > preccut) {
-      *s = (double) sin(theta);
-    } else {
-      *s = INVALIDS;
-      /* *s is undefined */
-    }
-  }
-static double z2stheta(double z, double s)
-  {
-  if(s != INVALIDS) {
-    return (double) s;
-  } else {
-    return (double) sqrt((1.-z)*(1.+z));
-  }
-  }
+static int imodulo (int v1, int v2)
+  { int v=v1%v2; return (v>=0) ? v : v+v2; }
+static int isqrt(int v)
+  { return (int)(sqrt(v+0.5)); }
+
 /* ctab[m] = (short)(
        (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
     | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4)); */
-static const unsigned short ctab[]={
+static const short ctab[]={
   0,1,256,257,2,3,258,259,512,513,768,769,514,515,770,771,4,5,260,261,6,7,262,
   263,516,517,772,773,518,519,774,775,1024,1025,1280,1281,1026,1027,1282,1283,
   1536,1537,1792,1793,1538,1539,1794,1795,1028,1029,1284,1285,1030,1031,1286,
@@ -169,7 +111,7 @@ static const unsigned short ctab[]={
 /* utab[m] = (short)(
       (m&0x1 )       | ((m&0x2 ) << 1) | ((m&0x4 ) << 2) | ((m&0x8 ) << 3)
     | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7)); */
-static const unsigned short utab[]={
+static const short utab[]={
   0,1,4,5,16,17,20,21,64,65,68,69,80,81,84,85,256,257,260,261,272,273,276,277,
   320,321,324,325,336,337,340,341,1024,1025,1028,1029,1040,1041,1044,1045,1088,
   1089,1092,1093,1104,1105,1108,1109,1280,1281,1284,1285,1296,1297,1300,1301,
@@ -189,59 +131,32 @@ static const unsigned short utab[]={
   21573,21584,21585,21588,21589,21760,21761,21764,21765,21776,21777,21780,21781,
   21824,21825,21828,21829,21840,21841,21844,21845 };
 
-static const PIX jrll[] = { 2,2,2,2,3,3,3,3,4,4,4,4 };
-static const PIX jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
-typedef unsigned char uchar;
+static const int jrll[] = { 2,2,2,2,3,3,3,3,4,4,4,4 };
+static const int jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
 
-static PIX xyf2nest(PIX nside, int ix, int iy, int face_num)
+static int xyf2nest (int nside, int ix, int iy, int face_num)
   {
-  return (((PIX)face_num)*nside*nside) +
-      (  ((PIX)utab[(uchar) ix      ])
-       | ((PIX)utab[(uchar)(ix>> 8 )]<<16)
-#ifdef HIGH_RESOLUTION
-       | ((PIX)utab[(uchar)(ix>> 16)]<<32)
-       | ((PIX)utab[(uchar)(ix>> 24)]<<48)
-#endif
-       | ((PIX)utab[(uchar) iy      ]<<1)
-       | ((PIX)utab[(uchar)(iy>> 8 )]<<17)
-#ifdef HIGH_RESOLUTION
-       | ((PIX)utab[(uchar)(iy>> 16 )]<<33)
-       | ((PIX)utab[(uchar)(iy>> 24 )]<<49)
-#endif
-      );
+  return (face_num*nside*nside) +
+      (utab[ix&0xff] | (utab[ix>>8]<<16)
+    | (utab[iy&0xff]<<1) | (utab[iy>>8]<<17));
   }
-static void nest2xyf (PIX nside, PIX pix, int *ix, int *iy, int *face_num)
+static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
   {
-  PIX npface_=(PIX)nside*nside, raw;
+  int npface_=nside*nside, raw;
   *face_num = pix/npface_;
   pix &= (npface_-1);
-  raw = (pix &(PIX)0x0000555500005555) 
-     | ((pix &(PIX)0x5555000055550000)>>15);
-  *ix = (PIX)ctab[(uchar) raw    ] 
-     | ((PIX)ctab[(uchar)(raw>>8)] <<4)
-#ifdef HIGH_RESOLUTION
-     | ((PIX)ctab[(uchar)(raw>>32)] <<16)
-     | ((PIX)ctab[(uchar)(raw>>40)] <<20)
-#endif
-     ;
+  raw = (pix&0x5555) | ((pix&0x55550000)>>15);
+  *ix = ctab[raw&0xff] | (ctab[raw>>8]<<4);
   pix >>= 1;
-  raw = (pix &(PIX)0x0000555500005555) 
-     | ((pix &(PIX)0x5555000055550000)>>15);
-  *iy = (PIX)ctab[(uchar) raw    ] 
-     | ((PIX)ctab[(uchar)(raw>>8)] <<4)
-#ifdef HIGH_RESOLUTION
-     | ((PIX)ctab[(uchar)(raw>>32)] <<16)
-     | ((PIX)ctab[(uchar)(raw>>40)] <<20)
-#endif
-     ;
+  raw = (pix&0x5555) | ((pix&0x55550000)>>15);
+  *iy = ctab[raw&0xff] | (ctab[raw>>8]<<4);
   }
-static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
+static int xyf2ring (int nside_, int ix, int iy, int face_num)
   {
-  PIX nl4 = 4* nside_;
-  PIX jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
+  int nl4 = 4*nside_;
+  int jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
 
-  PIX nr, n_before;
-  int kshift;
+  int nr, kshift, n_before;
   if (jr<nside_)
     {
     nr = jr;
@@ -256,7 +171,7 @@ static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
     }
   else
     {
-    PIX ncap_=2*nside_*(nside_-1);
+    int ncap_=2*nside_*(nside_-1);
     nr = nside_;
     n_before = ncap_ + (jr-nside_)*nl4;
     kshift = (jr-nside_)&1;
@@ -270,16 +185,16 @@ static PIX xyf2ring (PIX nside_, int ix, int iy, int face_num)
 
   return n_before + jp - 1;
   }
-static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
+static void ring2xyf (int nside_, int pix, int *ix, int *iy, int *face_num)
   {
-  PIX iring, iphi, kshift, nr, tmp, irt, ipt;
-  PIX ncap_=2*nside_*(nside_-1);
-  PIX npix_=12*nside_*nside_;
-  PIX nl2 = 2*nside_;
+  int iring, iphi, kshift, nr, tmp, irt, ipt;
+  int ncap_=2*nside_*(nside_-1);
+  int npix_=12*nside_*nside_;
+  int nl2 = 2*nside_;
 
   if (pix<ncap_) /* North Polar cap */
     {
-    iring = (0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
+    iring = (int)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
     iphi  = (pix+1) - 2*iring*(iring-1);
     kshift = 0;
     nr = iring;
@@ -294,9 +209,9 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
     }
   else if (pix<(npix_-ncap_)) /* Equatorial region */
     {
-    PIX ire, irm;
-    PIX ifm, ifp;
-    PIX ip = pix - ncap_;
+    unsigned int ire, irm;
+    int ifm, ifp;
+    int ip = pix - ncap_;
     iring = (ip/(4*nside_)) + nside_; /* counted from North pole */
     iphi  = (ip%(4*nside_)) + 1;
     kshift = (iring+nside_)&1;
@@ -314,8 +229,8 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
     }
   else /* South Polar cap */
     {
-    PIX ip = npix_ - pix;
-    iring = (0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
+    int ip = npix_ - pix;
+    iring = (int)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
     iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
     kshift = 0;
     nr = iring;
@@ -338,7 +253,7 @@ static void ring2xyf (PIX nside_, PIX pix, int *ix, int *iy, int *face_num)
   *iy =(-(ipt+irt))>>1;
   }
 
-static PIX ang2pix_nest_z_phi (PIX nside_, double z, double s, double phi)
+static int ang2pix_nest_z_phi (long nside_, double z, double phi)
   {
   double za = fabs(z);
   double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
@@ -348,8 +263,8 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double s, double phi)
     {
     double temp1 = nside_*(0.5+tt);
     double temp2 = nside_*(z*0.75);
-    PIX jp = (PIX)(temp1-temp2); /* index of  ascending edge line */
-    PIX jm = (PIX)(temp1+temp2); /* index of descending edge line */
+    int jp = (int)(temp1-temp2); /* index of  ascending edge line */
+    int jm = (int)(temp1+temp2); /* index of descending edge line */
     int ifp = jp/nside_;  /* in {0,4} */
     int ifm = jm/nside_;
     if (ifp == ifm)           /* faces 4 to 7 */
@@ -364,17 +279,14 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double s, double phi)
     }
   else /* polar region, za > 2/3 */
     {
-    PIX ntt = (PIX)tt, jp, jm;
+    int ntt = (int)tt, jp, jm;
     double tp, tmp;
     if (ntt>=4) ntt=3;
     tp = tt-ntt;
-    if(s != INVALIDS) {
-      tmp = nside_*s/sqrt((1+za)/3);
-    } else {
-      tmp = nside_*sqrt(3*(1-za));
-    }
-    jp = (PIX)(tp*tmp); /* increasing edge line index */
-    jm = (PIX)((1.0-tp)*tmp); /* decreasing edge line index */
+    tmp = nside_*sqrt(3*(1-za));
+
+    jp = (int)(tp*tmp); /* increasing edge line index */
+    jm = (int)((1.0-tp)*tmp); /* decreasing edge line index */
     if (jp>=nside_) jp = nside_-1; /* for points too close to the boundary */
     if (jm>=nside_) jm = nside_-1;
     if (z >= 0)
@@ -394,7 +306,7 @@ static PIX ang2pix_nest_z_phi (PIX nside_, double z, double s, double phi)
   return xyf2nest(nside_,ix,iy,face_num);
   }
 
-static PIX ang2pix_ring_z_phi (PIX nside_, double z, double s, double phi)
+static int ang2pix_ring_z_phi (long nside_, double z, double phi)
   {
   double za = fabs(z);
   double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
@@ -403,33 +315,28 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double s, double phi)
     {
     double temp1 = nside_*(0.5+tt);
     double temp2 = nside_*z*0.75;
-    PIX jp = (PIX)(temp1-temp2); /* index of  ascending edge line */
-    PIX jm = (PIX)(temp1+temp2); /* index of descending edge line */
+    int jp = (int)(temp1-temp2); /* index of  ascending edge line */
+    int jm = (int)(temp1+temp2); /* index of descending edge line */
 
     /* ring number counted from z=2/3 */
-    PIX ir = nside_ + 1 + jp - jm; /* in {1,2n+1} */
+    int ir = nside_ + 1 + jp - jm; /* in {1,2n+1} */
     int kshift = 1-(ir&1); /* kshift=1 if ir even, 0 otherwise */
 
-    PIX ip = (jp+jm-nside_+kshift+1)/2; /* in {0,4n-1} */
+    int ip = (jp+jm-nside_+kshift+1)/2; /* in {0,4n-1} */
     ip = imodulo(ip,4*nside_);
 
     return nside_*(nside_-1)*2 + (ir-1)*4*nside_ + ip;
     }
   else  /* North & South polar caps */
     {
-    double tp, tmp;
-    tp  = tt-(int)(tt);
-    if(s != INVALIDS) {
-      tmp = nside_*s/sqrt((1+za)/3);
-    } else {
-      tmp = nside_*sqrt(3*(1-za));
-    }
+    double tp = tt-(int)(tt);
+    double tmp = nside_*sqrt(3*(1-za));
 
-    PIX jp = (PIX)(tp*tmp); /* increasing edge line index */
-    PIX jm = (PIX)((1.0-tp)*tmp); /* decreasing edge line index */
+    int jp = (int)(tp*tmp); /* increasing edge line index */
+    int jm = (int)((1.0-tp)*tmp); /* decreasing edge line index */
 
-    PIX ir = jp+jm+1; /* ring number counted from the closest pole */
-    PIX ip = (PIX)(tt*ir); /* in {0,4*ir-1} */
+    int ir = jp+jm+1; /* ring number counted from the closest pole */
+    int ip = (int)(tt*ir); /* in {0,4*ir-1} */
     ip = imodulo(ip,4*ir);
 
     if (z>0)
@@ -439,71 +346,49 @@ static PIX ang2pix_ring_z_phi (PIX nside_, double z, double s, double phi)
     }
   }
 
-/* z1 = 1 - z for North Polar cap, z ~ 1
- *    =   undefined for equatorial region
- *    = 1 + z for Sourth Polar cap, z ~ -1
- **/
-static void pix2ang_ring_z_phi (PIX nside_, PIX pix, double *z, double * s, double *phi)
+static void pix2ang_ring_z_phi (int nside_, int pix, double *z, double *phi)
   {
-  PIX ncap_=nside_*(nside_-1)*2;
-  PIX npix_=12*nside_*nside_;
-  double fact2_  = 4./npix_, tmp;
+  long ncap_=nside_*(nside_-1)*2;
+  long npix_=12*nside_*nside_;
+  double fact2_  = 4./npix_;
   if (pix<ncap_) /* North Polar cap */
     {
-    PIX iring = (PIX)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
-    PIX iphi  = (pix+1) - 2*iring*(iring-1);
+    int iring = (int)(0.5*(1+isqrt(1+2*pix))); /* counted from North pole */
+    int iphi  = (pix+1) - 2*iring*(iring-1);
 
-    tmp = (iring*iring)*fact2_;
-    *z = 1 - tmp;
-    if(*z >= preccut) { 
-      *s=sqrt(tmp*(2.-tmp));
-    } else {
-      *s = INVALIDS;
-    }
+    *z = 1.0 - (iring*iring)*fact2_;
     *phi = (iphi-0.5) * halfpi/iring;
     }
   else if (pix<(npix_-ncap_)) /* Equatorial region */
     {
     double fact1_  = (nside_<<1)*fact2_;
-    PIX ip  = pix - ncap_;
-    PIX iring = ip/(4*nside_) + nside_; /* counted from North pole */
-    PIX iphi  = ip%(4*nside_) + 1;
+    int ip  = pix - ncap_;
+    int iring = ip/(4*nside_) + nside_; /* counted from North pole */
+    int iphi  = ip%(4*nside_) + 1;
     /* 1 if iring+nside is odd, 1/2 otherwise */
     double fodd = ((iring+nside_)&1) ? 1 : 0.5;
 
-    PIX nl2 = 2*nside_;
+    int nl2 = 2*nside_;
     *z = (nl2-iring)*fact1_;
-    *s = INVALIDS;
     *phi = (iphi-fodd) * pi/nl2;
     }
   else /* South Polar cap */
     {
-    PIX ip = npix_ - pix;
-    PIX iring = (PIX)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
-    PIX iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
+    int ip = npix_ - pix;
+    int iring = (int)(0.5*(1+isqrt(2*ip-1))); /* counted from South pole */
+    int iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
 
-    tmp = (iring*iring)*fact2_;
-    *z = tmp - 1.0;
-    if(*z <= -preccut) {
-      *s = sqrt(tmp*(2.-tmp));
-    } else {
-      *s = INVALIDS;
-    }
+    *z = -1.0 + (iring*iring)*fact2_;
     *phi = (iphi-0.5) * halfpi/iring;
     }
   }
 
-/** z1 = 1 - z if z is near 1
- *     = 1 + z if z is near -1
- *     = undefined if z is otherwise
- */
-static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *s, double *phi)
+static void pix2ang_nest_z_phi (int nside_, int pix, double *z, double *phi)
   {
-  PIX nl4 = nside_*4;
-  PIX npix_=12*nside_*nside_;
-  double fact2_ = 4./npix_, tmp;
-  int face_num, ix, iy, kshift;
-  PIX jr, nr, jp;
+  int nl4 = nside_*4;
+  int npix_=12*nside_*nside_;
+  double fact2_ = 4./npix_;
+  int face_num, ix, iy, jr, nr, kshift, jp;
 
   nest2xyf(nside_,pix,&ix,&iy,&face_num);
   jr = (jrll[face_num]*nside_) - ix - iy - 1;
@@ -511,25 +396,13 @@ static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *s, doubl
   if (jr<nside_)
     {
     nr = jr;
-    tmp = nr*nr*fact2_;
-    *z = 1 - tmp;
-    if(*z >= preccut) {
-      *s = sqrt(tmp*(2.-tmp));
-    } else {
-      *s = INVALIDS;
-    }
+    *z = 1 - nr*nr*fact2_;
     kshift = 0;
     }
   else if (jr > 3*nside_)
     {
     nr = nl4-jr;
-    tmp = nr*nr*fact2_;
-    *z = tmp - 1;
-    if(*z <= -preccut) {
-      *s = sqrt(tmp*(2.-tmp));
-    } else {
-      *s = INVALIDS;
-    }
+    *z = nr*nr*fact2_ - 1;
     kshift = 0;
     }
   else
@@ -537,7 +410,6 @@ static void pix2ang_nest_z_phi (PIX nside_, PIX pix, double *z, double *s, doubl
     double fact1_ = (nside_<<1)*fact2_;
     nr = nside_;
     *z = (2*nside_-jr)*fact1_;
-    *s = INVALIDS;
     kshift = (jr-nside_)&1;
     }
 
@@ -573,6 +445,484 @@ long npix2nside(long npix)
 long nside2npix(const long nside)
   { return 12*nside*nside; }
 
+void ang2pix_ring(long nside, double theta, double phi, long *ipix)
+  {
+  *ipix=ang2pix_ring_z_phi (nside,cos(theta),phi);
+  }
+void ang2pix_nest(long nside, double theta, double phi, long *ipix)
+  {
+  *ipix=ang2pix_nest_z_phi (nside,cos(theta),phi);
+  }
+void vec2pix_ring(long nside, const double *vec, long *ipix)
+  {
+  double vlen=sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+  *ipix=ang2pix_ring_z_phi (nside,vec[2]/vlen, atan2(vec[1],vec[0]));
+  }
+void vec2pix_nest(long nside, const double *vec, long *ipix)
+  {
+  double vlen=sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+  *ipix=ang2pix_nest_z_phi (nside,vec[2]/vlen, atan2(vec[1],vec[0]));
+  }
+void pix2ang_ring(long nside, long ipix, double *theta, double *phi)
+  {
+  double z;
+  pix2ang_ring_z_phi (nside,ipix,&z,phi);
+  *theta=acos(z);
+  }
+void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
+  {
+  double z;
+  pix2ang_nest_z_phi (nside,ipix,&z,phi);
+  *theta=acos(z);
+  }
+void pix2vec_ring(long nside, long ipix, double *vec)
+  {
+  double z, phi, stheta;
+  pix2ang_ring_z_phi (nside,ipix,&z,&phi);
+  stheta=sqrt((1.-z)*(1.+z));
+  vec[0]=stheta*cos(phi);
+  vec[1]=stheta*sin(phi);
+  vec[2]=z;
+  }
+void pix2vec_nest(long nside, long ipix, double *vec)
+  {
+  double z, phi, stheta;
+  pix2ang_nest_z_phi (nside,ipix,&z,&phi);
+  stheta=sqrt((1.-z)*(1.+z));
+  vec[0]=stheta*cos(phi);
+  vec[1]=stheta*sin(phi);
+  vec[2]=z;
+  }
+void nest2ring(long nside, long ipnest, long *ipring)
+  {
+  int ix, iy, face_num;
+  UTIL_ASSERT((nside&(nside-1))==0, "nest2ring: nside not a power of 2");
+  nest2xyf (nside, ipnest, &ix, &iy, &face_num);
+  *ipring = xyf2ring (nside, ix, iy, face_num);
+  }
+void ring2nest(long nside, long ipring, long *ipnest)
+  {
+  int ix, iy, face_num;
+  UTIL_ASSERT((nside&(nside-1))==0, "ring2nest: nside not a power of 2");
+  ring2xyf (nside, ipring, &ix, &iy, &face_num);
+  *ipnest = xyf2nest (nside, ix, iy, face_num);
+  }
+
+/* 64bit functions */
+
+static hpint64 imodulo64 (hpint64 v1, hpint64 v2)
+  { hpint64 v=v1%v2; return (v>=0) ? v : v+v2; }
+static long isqrt64(hpint64 v)
+  {
+  hpint64 res = sqrt(v+0.5);
+  if (v<((hpint64)(1)<<50)) return (long)res;
+  if (res*res>v)
+    --res;
+  else if ((res+1)*(res+1)<=v)
+    ++res;
+  return (long)res;
+  }
+
+static hpint64 spread_bits64 (int v)
+  {
+  return  (hpint64)(utab[ v     &0xff])
+       | ((hpint64)(utab[(v>> 8)&0xff])<<16)
+       | ((hpint64)(utab[(v>>16)&0xff])<<32)
+       | ((hpint64)(utab[(v>>24)&0xff])<<48);
+  }
+
+static hpint64 compress_bits64 (hpint64 v)
+  {
+  hpint64 raw = v&0x5555555555555555ull;
+  raw|=raw>>15;
+  return ctab[ raw     &0xff]      | (ctab[(raw>> 8)&0xff]<< 4)
+      | (ctab[(raw>>32)&0xff]<<16) | (ctab[(raw>>40)&0xff]<<20);
+  }
+
+static hpint64 xyf2nest64 (hpint64 nside, int ix, int iy, int face_num)
+  {
+  return (face_num*nside*nside) + spread_bits64(ix) + (spread_bits64(iy)<<1);
+  }
+
+static void nest2xyf64 (hpint64 nside, hpint64 pix, int *ix, int *iy,
+  int *face_num)
+  {
+  hpint64 npface_=nside*nside;
+  *face_num = pix/npface_;
+  pix &= (npface_-1);
+  *ix = compress_bits64(pix);
+  *iy = compress_bits64(pix>>1);
+  }
+
+static hpint64 xyf2ring64 (hpint64 nside_, int ix, int iy, int face_num)
+  {
+  hpint64 nl4 = 4*nside_;
+  hpint64 jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
+
+  hpint64 nr, kshift, n_before;
+  if (jr<nside_)
+    {
+    nr = jr;
+    n_before = 2*nr*(nr-1);
+    kshift = 0;
+    }
+  else if (jr > 3*nside_)
+    {
+    nr = nl4-jr;
+    n_before = 12*nside_*nside_ - 2*(nr+1)*nr;
+    kshift = 0;
+    }
+  else
+    {
+    hpint64 ncap_=2*nside_*(nside_-1);
+    nr = nside_;
+    n_before = ncap_ + (jr-nside_)*nl4;
+    kshift = (jr-nside_)&1;
+    }
+
+  jp = (jpll[face_num]*nr + ix - iy + 1 + kshift) / 2;
+  if (jp>nl4)
+    jp-=nl4;
+  else
+    if (jp<1) jp+=nl4;
+
+  return n_before + jp - 1;
+  }
+static void ring2xyf64 (hpint64 nside_, hpint64 pix, int *ix, int *iy,
+  int *face_num)
+  {
+  hpint64 iring, iphi, kshift, nr, tmp, irt, ipt;
+  hpint64 ncap_=2*nside_*(nside_-1);
+  hpint64 npix_=12*nside_*nside_;
+  hpint64 nl2 = 2*nside_;
+
+  if (pix<ncap_) /* North Polar cap */
+    {
+    iring = (hpint64)(0.5*(1+isqrt64(1+2*pix))); /* counted from North pole */
+    iphi  = (pix+1) - 2*iring*(iring-1);
+    kshift = 0;
+    nr = iring;
+    *face_num=0;
+    tmp = iphi-1;
+    if (tmp>=(2*iring))
+      {
+      *face_num=2;
+      tmp-=2*iring;
+      }
+    if (tmp>=iring) ++(*face_num);
+    }
+  else if (pix<(npix_-ncap_)) /* Equatorial region */
+    {
+    hpint64 ire, irm;
+    hpint64 ifm, ifp;
+    hpint64 ip = pix - ncap_;
+    iring = (ip/(4*nside_)) + nside_; /* counted from North pole */
+    iphi  = (ip%(4*nside_)) + 1;
+    kshift = (iring+nside_)&1;
+    nr = nside_;
+    ire = iring-nside_+1;
+    irm = nl2+2-ire;
+    ifm = (iphi - ire/2 + nside_ -1) / nside_;
+    ifp = (iphi - irm/2 + nside_ -1) / nside_;
+    if (ifp == ifm) /* faces 4 to 7 */
+      *face_num = (ifp==4) ? 4 : ifp+4;
+    else if (ifp<ifm) /* (half-)faces 0 to 3 */
+      *face_num = ifp;
+    else /* (half-)faces 8 to 11 */
+      *face_num = ifm + 8;
+    }
+  else /* South Polar cap */
+    {
+    hpint64 ip = npix_ - pix;
+    iring = (hpint64)(0.5*(1+isqrt64(2*ip-1))); /* counted from South pole */
+    iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
+    kshift = 0;
+    nr = iring;
+    iring = 2*nl2-iring;
+    *face_num=8;
+    tmp = iphi-1;
+    if (tmp>=(2*nr))
+      {
+      *face_num=10;
+      tmp-=2*nr;
+      }
+    if (tmp>=nr) ++(*face_num);
+    }
+
+  irt = iring - (jrll[*face_num]*nside_) + 1;
+  ipt = 2*iphi- jpll[*face_num]*nr - kshift -1;
+  if (ipt>=nl2) ipt-=8*nside_;
+
+  *ix =  (ipt-irt) >>1;
+  *iy =(-(ipt+irt))>>1;
+  }
+
+static hpint64 ang2pix_nest_z_phi64 (hpint64 nside_, double z, double s,
+  double phi)
+  {
+  double za = fabs(z);
+  double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
+  int face_num, ix, iy;
+
+  if (za<=twothird) /* Equatorial region */
+    {
+    double temp1 = nside_*(0.5+tt);
+    double temp2 = nside_*(z*0.75);
+    hpint64 jp = (hpint64)(temp1-temp2); /* index of  ascending edge line */
+    hpint64 jm = (hpint64)(temp1+temp2); /* index of descending edge line */
+    hpint64 ifp = jp/nside_;  /* in {0,4} */
+    hpint64 ifm = jm/nside_;
+    if (ifp == ifm)           /* faces 4 to 7 */
+      face_num = (ifp==4) ? 4: ifp+4;
+    else if (ifp < ifm)       /* (half-)faces 0 to 3 */
+      face_num = ifp;
+    else                      /* (half-)faces 8 to 11 */
+      face_num = ifm + 8;
+
+    ix = jm & (nside_-1);
+    iy = nside_ - (jp & (nside_-1)) - 1;
+    }
+  else /* polar region, za > 2/3 */
+    {
+    int ntt = (int)tt, jp, jm;
+    double tp, tmp;
+    if (ntt>=4) ntt=3;
+    tp = tt-ntt;
+    if (s>-2.)
+      tmp = nside_*s/sqrt((1.+za)/3.);
+    else
+      tmp = nside_*sqrt(3*(1-za));
+
+    jp = (hpint64)(tp*tmp); /* increasing edge line index */
+    jm = (hpint64)((1.0-tp)*tmp); /* decreasing edge line index */
+    if (jp>=nside_) jp = nside_-1; /* for points too close to the boundary */
+    if (jm>=nside_) jm = nside_-1;
+    if (z >= 0)
+      {
+      face_num = ntt;  /* in {0,3} */
+      ix = nside_ - jm - 1;
+      iy = nside_ - jp - 1;
+      }
+    else
+      {
+      face_num = ntt + 8; /* in {8,11} */
+      ix =  jp;
+      iy =  jm;
+      }
+    }
+
+  return xyf2nest64(nside_,ix,iy,face_num);
+  }
+
+static hpint64 ang2pix_ring_z_phi64 (hpint64 nside_, double z, double s,
+  double phi)
+  {
+  double za = fabs(z);
+  double tt = fmodulo(phi,twopi) * inv_halfpi; /* in [0,4) */
+
+  if (za<=twothird) /* Equatorial region */
+    {
+    double temp1 = nside_*(0.5+tt);
+    double temp2 = nside_*z*0.75;
+    hpint64 jp = (hpint64)(temp1-temp2); /* index of  ascending edge line */
+    hpint64 jm = (hpint64)(temp1+temp2); /* index of descending edge line */
+
+    /* ring number counted from z=2/3 */
+    hpint64 ir = nside_ + 1 + jp - jm; /* in {1,2n+1} */
+    int kshift = 1-(ir&1); /* kshift=1 if ir even, 0 otherwise */
+
+    hpint64 ip = (jp+jm-nside_+kshift+1)/2; /* in {0,4n-1} */
+    ip = imodulo64(ip,4*nside_);
+
+    return nside_*(nside_-1)*2 + (ir-1)*4*nside_ + ip;
+    }
+  else  /* North & South polar caps */
+    {
+    double tp = tt-(int)(tt);
+    double tmp = (s>-2.) ? nside_*s/sqrt((1.+za)/3.) : nside_*sqrt(3*(1-za));
+
+    hpint64 jp = (hpint64)(tp*tmp); /* increasing edge line index */
+    hpint64 jm = (hpint64)((1.0-tp)*tmp); /* decreasing edge line index */
+
+    hpint64 ir = jp+jm+1; /* ring number counted from the closest pole */
+    hpint64 ip = (hpint64)(tt*ir); /* in {0,4*ir-1} */
+    ip = imodulo64(ip,4*ir);
+
+    if (z>0)
+      return 2*ir*(ir-1) + ip;
+    else
+      return 12*nside_*nside_ - 2*ir*(ir+1) + ip;
+    }
+  }
+
+static void pix2ang_ring_z_phi64 (hpint64 nside_, hpint64 pix,
+  double *z, double *s, double *phi)
+  {
+  hpint64 ncap_=nside_*(nside_-1)*2;
+  hpint64 npix_=12*nside_*nside_;
+  double fact2_  = 4./npix_;
+  *s=-5;
+  if (pix<ncap_) /* North Polar cap */
+    {
+    hpint64 iring = (hpint64)(0.5*(1+isqrt64(1+2*pix))); /* from N pole */
+    hpint64 iphi  = (pix+1) - 2*iring*(iring-1);
+    double tmp=(iring*iring)*fact2_;
+
+    *z = 1.0 - tmp;
+    if (*z>0.99) *s=sqrt(tmp*(2.-tmp));
+    *phi = (iphi-0.5) * halfpi/iring;
+    }
+  else if (pix<(npix_-ncap_)) /* Equatorial region */
+    {
+    double fact1_  = (nside_<<1)*fact2_;
+    hpint64 ip  = pix - ncap_;
+    hpint64 iring = ip/(4*nside_) + nside_; /* counted from North pole */
+    hpint64 iphi  = ip%(4*nside_) + 1;
+    /* 1 if iring+nside is odd, 1/2 otherwise */
+    double fodd = ((iring+nside_)&1) ? 1 : 0.5;
+
+    hpint64 nl2 = 2*nside_;
+    *z = (nl2-iring)*fact1_;
+    *phi = (iphi-fodd) * pi/nl2;
+    }
+  else /* South Polar cap */
+    {
+    hpint64 ip = npix_ - pix;
+    hpint64 iring = (hpint64)(0.5*(1+isqrt64(2*ip-1))); /* from S pole */
+    hpint64 iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
+
+    double tmp=(iring*iring)*fact2_;
+    *z = tmp - 1.0;
+    if (*z<-0.99) *s=sqrt(tmp*(2.-tmp));
+    *phi = (iphi-0.5) * halfpi/iring;
+    }
+  }
+
+static void pix2ang_nest_z_phi64 (hpint64 nside_, hpint64 pix, double *z,
+  double *s, double *phi)
+  {
+  hpint64 nl4 = nside_*4;
+  hpint64 npix_=12*nside_*nside_;
+  double fact2_ = 4./npix_;
+  int face_num, ix, iy;
+  hpint64 jr, nr, kshift, jp;
+  *s=-5;
+
+  nest2xyf64(nside_,pix,&ix,&iy,&face_num);
+  jr = (jrll[face_num]*nside_) - ix - iy - 1;
+
+  if (jr<nside_)
+    {
+    double tmp;
+    nr = jr;
+    tmp=(nr*nr)*fact2_;
+    *z = 1 - tmp;
+    if (*z>0.99) *s=sqrt(tmp*(2.-tmp));
+    kshift = 0;
+    }
+  else if (jr > 3*nside_)
+    {
+    double tmp;
+    nr = nl4-jr;
+    tmp=(nr*nr)*fact2_;
+    *z = tmp - 1;
+    if (*z<-0.99) *s=sqrt(tmp*(2.-tmp));
+    kshift = 0;
+    }
+  else
+    {
+    double fact1_ = (nside_<<1)*fact2_;
+    nr = nside_;
+    *z = (2*nside_-jr)*fact1_;
+    kshift = (jr-nside_)&1;
+    }
+
+  jp = (jpll[face_num]*nr + ix -iy + 1 + kshift) / 2;
+  if (jp>nl4) jp-=nl4;
+  if (jp<1) jp+=nl4;
+
+  *phi = (jp-(kshift+1)*0.5)*(halfpi/nr);
+  }
+
+long npix2nside64(hpint64 npix)
+  {
+  hpint64 res = isqrt64(npix/12.);
+  UTIL_ASSERT(res*res*12==npix,"problem in npix2nside");
+  return (long)res;
+  }
+
+hpint64 nside2npix64(hpint64 nside)
+  { return 12*nside*nside; }
+
+void ang2pix_ring64(hpint64 nside, double theta, double phi, hpint64 *ipix)
+  {
+  double cth=cos(theta), sth=(fabs(cth)>0.99) ? sin(theta) : -5;
+  *ipix=ang2pix_ring_z_phi64 (nside,cth,sth,phi);
+  }
+void ang2pix_nest64(hpint64 nside, double theta, double phi, hpint64 *ipix)
+  {
+  double cth=cos(theta), sth=(fabs(cth)>0.99) ? sin(theta) : -5;
+  *ipix=ang2pix_nest_z_phi64 (nside,cth,sth,phi);
+  }
+void vec2pix_ring64(hpint64 nside, const double *vec, hpint64 *ipix)
+  {
+  double vlen=sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+  double cth = vec[2]/vlen;
+  double sth=(fabs(cth)>0.99) ? sqrt(vec[0]*vec[0]+vec[1]*vec[1])/vlen : -5;
+  *ipix=ang2pix_ring_z_phi64 (nside,cth,sth,atan2(vec[1],vec[0]));
+  }
+void vec2pix_nest64(hpint64 nside, const double *vec, hpint64 *ipix)
+  {
+  double vlen=sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+  double cth = vec[2]/vlen;
+  double sth=(fabs(cth)>0.99) ? sqrt(vec[0]*vec[0]+vec[1]*vec[1])/vlen : -5;
+  *ipix=ang2pix_nest_z_phi64 (nside,cth,sth,atan2(vec[1],vec[0]));
+  }
+void pix2ang_ring64(hpint64 nside, hpint64 ipix, double *theta, double *phi)
+  {
+  double z,s;
+  pix2ang_ring_z_phi64 (nside,ipix,&z,&s,phi);
+  *theta= (s<-2) ? acos(z) : atan2(s,z);
+  }
+void pix2ang_nest64(hpint64 nside, hpint64 ipix, double *theta, double *phi)
+  {
+  double z,s;
+  pix2ang_nest_z_phi64 (nside,ipix,&z,&s,phi);
+  *theta= (s<-2) ? acos(z) : atan2(s,z);
+  }
+void pix2vec_ring64(hpint64 nside, hpint64 ipix, double *vec)
+  {
+  double z, phi, stheta;
+  pix2ang_ring_z_phi64 (nside,ipix,&z,&stheta,&phi);
+  if (stheta<-2) stheta=sqrt((1.-z)*(1.+z));
+  vec[0]=stheta*cos(phi);
+  vec[1]=stheta*sin(phi);
+  vec[2]=z;
+  }
+void pix2vec_nest64(hpint64 nside, hpint64 ipix, double *vec)
+  {
+  double z, phi, stheta;
+  pix2ang_nest_z_phi64 (nside,ipix,&z,&stheta,&phi);
+  if (stheta<-2) stheta=sqrt((1.-z)*(1.+z));
+  vec[0]=stheta*cos(phi);
+  vec[1]=stheta*sin(phi);
+  vec[2]=z;
+  }
+void nest2ring64(hpint64 nside, hpint64 ipnest, hpint64 *ipring)
+  {
+  int ix, iy, face_num;
+  UTIL_ASSERT((nside&(nside-1))==0, "nest2ring: nside not a power of 2");
+  nest2xyf64 (nside, ipnest, &ix, &iy, &face_num);
+  *ipring = xyf2ring64 (nside, ix, iy, face_num);
+  }
+void ring2nest64(hpint64 nside, hpint64 ipring, hpint64 *ipnest)
+  {
+  int ix, iy, face_num;
+  UTIL_ASSERT((nside&(nside-1))==0, "ring2nest: nside not a power of 2");
+  ring2xyf64 (nside, ipring, &ix, &iy, &face_num);
+  *ipnest = xyf2nest64 (nside, ix, iy, face_num);
+  }
+
 #ifdef ENABLE_FITSIO
 
 static void printerror (int status)
@@ -595,6 +945,7 @@ static void setCoordSysHP(char coordsys,char *coordsys9)
                     "(Galactic,Ecliptic,Celestial=Equatorial). "
                     " Celestial system was set.\n", __FILE__, __LINE__);
   }
+
 float *read_healpix_map(const char *infile, long *nside, char *coordsys,
   char *ordering)
   {
@@ -709,79 +1060,12 @@ void write_healpix_map (const float *signal, long nside, const char *filename,
   fits_write_key(fptr, TSTRING, "COORDSYS", coordsys9,
     "Pixelisation coordinate system", &status);
 
-  fits_write_comment(fptr,"G = Galactic, E = ecliptic, C = celestial = equatorial",
-    &status);
+  fits_write_comment(fptr,
+    "G = Galactic, E = ecliptic, C = celestial = equatorial", &status);
 
-  fits_write_col(fptr, TFLOAT, 1, 1, 1, 12*nside*nside, (void *)signal, &status);
+  fits_write_col(fptr, TFLOAT, 1, 1, 1, 12*nside*nside, (void *)signal,&status);
   fits_close_file(fptr, &status);
   printerror(status);
   }
+
 #endif
-void ang2pix_ring(long nside, double theta, double phi, long *ipix)
-  {
-  double z, s;
-  theta2z(theta, &z, &s);
-  *ipix=ang2pix_ring_z_phi (nside,z,s,phi);
-  }
-void ang2pix_nest(long nside, double theta, double phi, long *ipix)
-  {
-  double z, s;
-  theta2z(theta, &z, &s);
-  *ipix=ang2pix_nest_z_phi (nside,z,s,phi);
-  }
-void vec2pix_ring(long nside, const double *vec, long *ipix)
-  {
-  double phi, z, s;
-  vec2z_phi(vec,&z,&s,&phi);
-  *ipix=ang2pix_ring_z_phi (nside,z,s,phi);
-  }
-void vec2pix_nest(long nside, const double *vec, long *ipix)
-  {
-  double phi, z, s;
-  vec2z_phi(vec,&z,&s,&phi);
-  *ipix=ang2pix_nest_z_phi (nside,z,s,phi);
-  }
-void pix2ang_ring(long nside, long ipix, double *theta, double *phi)
-  {
-  double z, s;
-  pix2ang_ring_z_phi (nside,ipix,&z,&s,phi);
-  *theta=z2theta(z, s);
-  }
-void pix2ang_nest(long nside, long ipix, double *theta, double *phi)
-  {
-  double z, s;
-  pix2ang_nest_z_phi (nside,ipix,&z,&s,phi);
-  *theta=z2theta(z, s);
-  }
-void pix2vec_ring(long nside, long ipix, double *vec)
-  {
-  double z, s, phi, stheta;
-  pix2ang_ring_z_phi (nside,ipix,&z, &s, &phi);
-  stheta=z2stheta(z, s);
-  vec[0]=stheta*cos(phi);
-  vec[1]=stheta*sin(phi);
-  vec[2]=z;
-  }
-void pix2vec_nest(long nside, long ipix, double *vec)
-  {
-  double z, s, phi, stheta;
-  pix2ang_nest_z_phi (nside,ipix,&z,&s,&phi);
-  stheta=z2stheta(z, s);
-  vec[0]=stheta*cos(phi);
-  vec[1]=stheta*sin(phi);
-  vec[2]=z;
-  }
-void nest2ring(long nside, long ipnest, long *ipring)
-  {
-  int ix, iy, face_num;
-  UTIL_ASSERT((nside&(nside-1))==0, "nest2ring: nside not a power of 2");
-  nest2xyf (nside, ipnest, &ix, &iy, &face_num);
-  *ipring = xyf2ring (nside, ix, iy, face_num);
-  }
-void ring2nest(long nside, long ipring, long *ipnest)
-  {
-  int ix, iy, face_num;
-  UTIL_ASSERT((nside&(nside-1))==0, "ring2nest: nside not a power of 2");
-  ring2xyf (nside, ipring, &ix, &iy, &face_num);
-  *ipnest = xyf2nest (nside, ix, iy, face_num);
-  }
