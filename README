@@ -6,9 +6,12 @@
 
   You will need numpy > 1.6.
   
-  The installation is just python setup.py install
+  The installation is just 
+    python setup.py install
+  or 
+    easy_install chealpy
 
-  Refer to the HealPix manual for usage.
+  Refer to HealPix manual for usage.
 
   Two precisions are provided:
     chealpy.high :upto nside=1<<29
