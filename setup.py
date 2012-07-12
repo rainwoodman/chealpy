@@ -1,7 +1,7 @@
 from numpy.distutils.core import setup, Extension
 from numpy import get_include
 
-setup(name="chealpy", version="1.0",
+setup(name="chealpy", version="0.1",
       author="Yu Feng",
       author_email="yfeng1@andrew.cmu.edu",
       description="Python Binding of chealpix",
