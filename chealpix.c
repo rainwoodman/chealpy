@@ -496,7 +496,7 @@ void pix2vec_nest(long nside, long ipix, double *vec)
 void nest2ring(long nside, long ipnest, long *ipring)
   {
   int ix, iy, face_num;
-  if(nside&(nside-1) !=0) {
+  if((nside&(nside-1)) !=0) {
     *ipring = -1;
     return;
   }
@@ -507,8 +507,8 @@ void nest2ring(long nside, long ipnest, long *ipring)
 void ring2nest(long nside, long ipring, long *ipnest)
   {
   int ix, iy, face_num;
-  if(nside&(nside-1) !=0) {
-    *ipring = -1;
+  if((nside&(nside-1)) !=0) {
+    *ipnest = -1;
     return;
   }
   /*UTIL_ASSERT((nside&(nside-1))==0, "ring2nest: nside not a power of 2");*/
@@ -919,7 +919,7 @@ void pix2vec_nest64(hpint64 nside, hpint64 ipix, double *vec)
 void nest2ring64(hpint64 nside, hpint64 ipnest, hpint64 *ipring)
   {
   int ix, iy, face_num;
-  if(nside&(nside-1) !=0) {
+  if((nside&(nside-1)) !=0) {
     *ipring = -1;
     return;
   }
@@ -930,8 +930,8 @@ void nest2ring64(hpint64 nside, hpint64 ipnest, hpint64 *ipring)
 void ring2nest64(hpint64 nside, hpint64 ipring, hpint64 *ipnest)
   {
   int ix, iy, face_num;
-  if(nside&(nside-1) !=0) {
-    *ipring = -1;
+  if((nside&(nside-1)) !=0) {
+    *ipnest = -1;
     return;
   }
   /*UTIL_ASSERT((nside&(nside-1))==0, "ring2nest: nside not a power of 2");*/
