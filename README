@@ -1,5 +1,5 @@
 
-  chealpy is the Python binding of chealpix.
+chealpy is the Python binding of chealpix.
 
   chealpix is the C implementation of HealPix.
   HealPix linearizes spherical coordinate into integers.
@@ -27,3 +27,21 @@
   For a feature-rich Healpix C++ binding, take a look at healpy.
 
   Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
+
+  Description of Functions:
+
+def ang2pix_ring (nside,theta,phi,ipix=None)
+  angle to pix
+def ang2pix_nest (nside,theta,phi, ipix = None):
+def pix2ang_ring (nside,ipix, theta = None,phi = None):
+def pix2ang_nest (nside,ipix, theta = None,phi = None):
+def vec2pix_ring (nside,vec, ipix = None):
+def vec2pix_nest (nside,vec, ipix = None):
+def pix2vec_ring (nside,ipix, vec = None):
+def pix2vec_nest (nside,ipix, vec = None):
+def nest2ring (nside,ipnest, ipring = None):
+def ring2nest (nside,ipring, ipnest = None):
+def npix2nside (npix, nside = None):
+def nside2npix (nside, npix = None):
+def ang2vec (theta,phi, vec = None):
+def vec2ang (vec, theta = None,phi = None):

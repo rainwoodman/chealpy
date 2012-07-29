@@ -1,4 +1,7 @@
 
+# do not edit. This is auto-generated
+#cython: embedsignature=True
+#cython: cdivision=True
 cimport numpy
 cimport npyiter
 from libc.stdint cimport *
@@ -34,8 +37,8 @@ cdef extern from "chealpix.h":
   void _vec2ang "vec2ang" (double * _vec, double * _theta, double * _phi) nogil
 
 
-  
 def ang2pix_ring (nside,theta,phi, ipix = None):
+  "Converting theta(0 to pi), phi(0 to 2 pi) to pix number"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='int')
 
@@ -65,8 +68,8 @@ def ang2pix_ring (nside,theta,phi, ipix = None):
   return ipix
 
 
-  
 def ang2pix_nest (nside,theta,phi, ipix = None):
+  "Converting theta(0 to pi), phi(0 to 2 pi) to pix number"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='int')
 
@@ -96,8 +99,8 @@ def ang2pix_nest (nside,theta,phi, ipix = None):
   return ipix
 
 
-  
 def ang2pix_ring64 (nside,theta,phi, ipix = None):
+  "Converting theta(0 to pi), phi(0 to 2 pi) to pix number"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='i8')
 
@@ -127,8 +130,8 @@ def ang2pix_ring64 (nside,theta,phi, ipix = None):
   return ipix
 
 
-  
 def ang2pix_nest64 (nside,theta,phi, ipix = None):
+  "Converting theta(0 to pi), phi(0 to 2 pi) to pix number"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='i8')
 
@@ -158,8 +161,8 @@ def ang2pix_nest64 (nside,theta,phi, ipix = None):
   return ipix
 
 
-  
 def pix2ang_ring (nside,ipix, theta = None,phi = None):
+  "Converting pix number to theta(0 to pi), phi(0 to 2 pi)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')
@@ -190,8 +193,8 @@ def pix2ang_ring (nside,ipix, theta = None,phi = None):
   return theta,phi
 
 
-  
 def pix2ang_nest (nside,ipix, theta = None,phi = None):
+  "Converting pix number to theta(0 to pi), phi(0 to 2 pi)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')
@@ -222,8 +225,8 @@ def pix2ang_nest (nside,ipix, theta = None,phi = None):
   return theta,phi
 
 
-  
 def pix2ang_ring64 (nside,ipix, theta = None,phi = None):
+  "Converting pix number to theta(0 to pi), phi(0 to 2 pi)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')
@@ -254,8 +257,8 @@ def pix2ang_ring64 (nside,ipix, theta = None,phi = None):
   return theta,phi
 
 
-  
 def pix2ang_nest64 (nside,ipix, theta = None,phi = None):
+  "Converting pix number to theta(0 to pi), phi(0 to 2 pi)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')
@@ -286,8 +289,8 @@ def pix2ang_nest64 (nside,ipix, theta = None,phi = None):
   return theta,phi
 
 
-  
 def vec2pix_ring (nside,vec, ipix = None):
+  "Converting 3 vectors (..., 3) to pix number"
   shape = numpy.broadcast(1, nside,vec[...,0],vec[...,1],vec[...,2]).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='int')
 
@@ -318,8 +321,8 @@ def vec2pix_ring (nside,vec, ipix = None):
   return ipix
 
 
-  
 def vec2pix_nest (nside,vec, ipix = None):
+  "Converting 3 vectors (..., 3) to pix number"
   shape = numpy.broadcast(1, nside,vec[...,0],vec[...,1],vec[...,2]).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='int')
 
@@ -350,8 +353,8 @@ def vec2pix_nest (nside,vec, ipix = None):
   return ipix
 
 
-  
 def vec2pix_ring64 (nside,vec, ipix = None):
+  "Converting 3 vectors (..., 3) to pix number"
   shape = numpy.broadcast(1, nside,vec[...,0],vec[...,1],vec[...,2]).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='i8')
 
@@ -382,8 +385,8 @@ def vec2pix_ring64 (nside,vec, ipix = None):
   return ipix
 
 
-  
 def vec2pix_nest64 (nside,vec, ipix = None):
+  "Converting 3 vectors (..., 3) to pix number"
   shape = numpy.broadcast(1, nside,vec[...,0],vec[...,1],vec[...,2]).shape 
   if ipix is None: ipix = numpy.empty(shape, dtype='i8')
 
@@ -414,8 +417,8 @@ def vec2pix_nest64 (nside,vec, ipix = None):
   return ipix
 
 
-  
 def pix2vec_ring (nside,ipix, vec = None):
+  "Converting pix number to 3 vectors (..., 3)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if vec is None: vec = numpy.empty(shape, dtype=('f8', 3))
 
@@ -446,8 +449,8 @@ def pix2vec_ring (nside,ipix, vec = None):
   return vec
 
 
-  
 def pix2vec_nest (nside,ipix, vec = None):
+  "Converting pix number to 3 vectors (..., 3)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if vec is None: vec = numpy.empty(shape, dtype=('f8', 3))
 
@@ -478,8 +481,8 @@ def pix2vec_nest (nside,ipix, vec = None):
   return vec
 
 
-  
 def pix2vec_ring64 (nside,ipix, vec = None):
+  "Converting pix number to 3 vectors (..., 3)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if vec is None: vec = numpy.empty(shape, dtype=('f8', 3))
 
@@ -510,8 +513,8 @@ def pix2vec_ring64 (nside,ipix, vec = None):
   return vec
 
 
-  
 def pix2vec_nest64 (nside,ipix, vec = None):
+  "Converting pix number to 3 vectors (..., 3)"
   shape = numpy.broadcast(1, nside,ipix).shape 
   if vec is None: vec = numpy.empty(shape, dtype=('f8', 3))
 
@@ -542,8 +545,8 @@ def pix2vec_nest64 (nside,ipix, vec = None):
   return vec
 
 
-  
 def nest2ring (nside,ipnest, ipring = None):
+  "nest2ring"
   shape = numpy.broadcast(1, nside,ipnest).shape 
   if ipring is None: ipring = numpy.empty(shape, dtype='int')
 
@@ -571,8 +574,8 @@ def nest2ring (nside,ipnest, ipring = None):
   return ipring
 
 
-  
 def nest2ring64 (nside,ipnest, ipring = None):
+  "nest2ring"
   shape = numpy.broadcast(1, nside,ipnest).shape 
   if ipring is None: ipring = numpy.empty(shape, dtype='i8')
 
@@ -600,8 +603,8 @@ def nest2ring64 (nside,ipnest, ipring = None):
   return ipring
 
 
-  
 def ring2nest (nside,ipring, ipnest = None):
+  "ring2nest"
   shape = numpy.broadcast(1, nside,ipring).shape 
   if ipnest is None: ipnest = numpy.empty(shape, dtype='int')
 
@@ -629,8 +632,8 @@ def ring2nest (nside,ipring, ipnest = None):
   return ipnest
 
 
-  
 def ring2nest64 (nside,ipring, ipnest = None):
+  "ring2nest"
   shape = numpy.broadcast(1, nside,ipring).shape 
   if ipnest is None: ipnest = numpy.empty(shape, dtype='i8')
 
@@ -658,8 +661,8 @@ def ring2nest64 (nside,ipring, ipnest = None):
   return ipnest
 
 
-  
 def npix2nside (npix, nside = None):
+  "npix2nside"
   shape = numpy.broadcast(1, npix).shape 
   if nside is None: nside = numpy.empty(shape, dtype='int')
 
@@ -685,8 +688,8 @@ def npix2nside (npix, nside = None):
   return nside
 
 
-  
 def npix2nside64 (npix, nside = None):
+  "npix2nside"
   shape = numpy.broadcast(1, npix).shape 
   if nside is None: nside = numpy.empty(shape, dtype='i8')
 
@@ -712,8 +715,8 @@ def npix2nside64 (npix, nside = None):
   return nside
 
 
-  
 def nside2npix (nside, npix = None):
+  "nside2npix"
   shape = numpy.broadcast(1, nside).shape 
   if npix is None: npix = numpy.empty(shape, dtype='int')
 
@@ -739,8 +742,8 @@ def nside2npix (nside, npix = None):
   return npix
 
 
-  
 def nside2npix64 (nside, npix = None):
+  "nside2npix"
   shape = numpy.broadcast(1, nside).shape 
   if npix is None: npix = numpy.empty(shape, dtype='i8')
 
@@ -766,8 +769,8 @@ def nside2npix64 (nside, npix = None):
   return npix
 
 
-  
 def ang2vec (theta,phi, vec = None):
+  "ang2vec"
   shape = numpy.broadcast(1, theta,phi).shape 
   if vec is None: vec = numpy.empty(shape, dtype=('f8', 3))
 
@@ -798,8 +801,8 @@ def ang2vec (theta,phi, vec = None):
   return vec
 
 
-  
 def vec2ang (vec, theta = None,phi = None):
+  "vec2ang"
   shape = numpy.broadcast(1, vec[...,0],vec[...,1],vec[...,2]).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')

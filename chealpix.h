@@ -69,7 +69,7 @@ void pix2vec_ring(long nside, long ipix, double *vec);
 
 /* operations on Nside values up to 2^29 */
 
-typedef long long hpint64;
+typedef int64_t hpint64;
 
 void ang2pix_nest64(hpint64 nside, double theta, double phi, hpint64 *ipix);
 void ang2pix_ring64(hpint64 nside, double theta, double phi, hpint64 *ipix);

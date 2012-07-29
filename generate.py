@@ -23,6 +23,12 @@ funcs = \
   [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz2] +\
   [(rlz, ('vec2ang', ('vec', ), ('theta', 'phi'))         ) for rlz in rlz2] +\
   []
+docstrings = {
+ 'ang2pix': 'Converting theta(0 to pi), phi(0 to 2 pi) to pix number',
+ 'pix2ang': 'Converting pix number to theta(0 to pi), phi(0 to 2 pi)',
+ 'vec2pix': 'Converting 3 vectors (..., 3) to pix number',
+ 'pix2vec': 'Converting pix number to 3 vectors (..., 3)',
+}
 
 # ctype, numpy.dtype
 int_type = {32: ('long', 'int'), 64: ('int64_t', 'i8')}
@@ -142,6 +148,10 @@ def generate_ufunc(rlz, func):
     output_ret = list(output) + [ret]
   else:
     output_ret = output
+  if name in docstrings:
+    docstring = docstrings[name]
+  else:
+    docstring = name
 
   ops, op_dtypes, op_flags, vars = args_nditer(input, output_ret, wordsize)
   iterstatement = """
@@ -268,8 +278,8 @@ def generate_ufunc(rlz, func):
        'ret' : ret
      }
   return """
-  
 %(defstatement)s
+  "%(docstring)s"
 %(shapestatement)s
 %(nonestatements)s
 %(iterstatement)s
@@ -290,6 +300,8 @@ def generate_ufunc(rlz, func):
 
 FILE = """
 # do not edit. This is auto-generated
+#cython: embedsignature=True
+#cython: cdivision=True
 cimport numpy
 cimport npyiter
 from libc.stdint cimport *

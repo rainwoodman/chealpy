@@ -9,6 +9,7 @@ setup(name="chealpy", version="0.1",
       license="GPLv2+",
 #      download_url="https://github.com/rainwoodman/chealpy/zipball/master",
       url="http://github.com/rainwoodman/chealpy",
+      download_url="http://web.phys.cmu.edu/~yfeng1/chealpy/chealpy-0.1.tar.gz",
       package_dir = {'chealpy': 'chealpy'},
       packages = [ 'chealpy' ],
       ext_modules = [
