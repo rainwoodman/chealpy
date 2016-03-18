@@ -1,15 +1,14 @@
 from numpy.distutils.core import setup, Extension
 from numpy import get_include
 
-setup(name="chealpy", version="0.1",
+setup(name="chealpy", version="0.1.0",
       author="Yu Feng",
-      author_email="yfeng1@andrew.cmu.edu",
+      author_email="yfeng1@berkeley.edu",
       description="Python Binding of chealpix",
       zip_safe=False,
       license="GPLv2+",
 #      download_url="https://github.com/rainwoodman/chealpy/zipball/master",
       url="http://github.com/rainwoodman/chealpy",
-      download_url="http://web.phys.cmu.edu/~yfeng1/chealpy/chealpy-0.1.tar.gz",
       package_dir = {'chealpy': 'chealpy'},
       packages = [ 'chealpy' ],
       ext_modules = [
