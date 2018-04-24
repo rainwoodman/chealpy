@@ -23,7 +23,7 @@
   Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
 """
 
-from high import *
+from .high import *
 
 __version__ = 'chealpy svn 304'
 
