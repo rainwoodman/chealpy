@@ -8,8 +8,6 @@ chealpy is the Python binding of chealpix.
   
   The installation is just 
     python setup.py install
-  or 
-    easy_install chealpy
 
   Refer to HealPix manual for usage.
 
