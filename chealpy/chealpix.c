@@ -138,8 +138,8 @@ static const int jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
 static int xyf2nest (int nside, int ix, int iy, int face_num)
   {
   return (face_num*nside*nside) +
-      (utab[ix&0xff] | (utab[ix>>8]<<16)
-    | (utab[iy&0xff]<<1) | (utab[iy>>8]<<17));
+      (utab[ix&0xff] | (utab[(ix>>8)&0xff]<<16)
+    | (utab[iy&0xff]<<1) | (utab[(iy>>8)&0xff]<<17));
   }
 static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
   {

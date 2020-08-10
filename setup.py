@@ -1,23 +1,39 @@
-from numpy.distutils.core import setup, Extension
-from numpy import get_include
+from setuptools import setup
+from Cython.Build import cythonize
+from distutils.extension import Extension
+import numpy
 
-setup(name="chealpy", version="0.1.1",
+def find_version(path):
+    import re
+    # path shall be a plain ascii text file.
+    s = open(path, 'rt').read()
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              s, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Version not found")
+
+
+extensions = [
+    Extension("chealpy._ccode", 
+         sources=["chealpy/_ccode.pyx", "chealpy/chealpix.c"],
+         extra_compile_args=['-O3'],
+         depends=['chealpy/chealpix.h'],
+         include_dirs=[numpy.get_include(), 'chealpy/'],
+    ),
+]
+
+setup(name="chealpy",
       author="Yu Feng",
       author_email="yfeng1@berkeley.edu",
       description="Python Binding of chealpix",
-      zip_safe=False,
+      ext_modules = cythonize(extensions),
+      install_requires=['cython', 'numpy'],
       license="GPLv2+",
-#      download_url="https://github.com/rainwoodman/chealpy/zipball/master",
-      url="http://github.com/rainwoodman/chealpy",
       package_dir = {'chealpy': 'chealpy'},
       packages = [ 'chealpy' ],
-      ext_modules = [
-        Extension("chealpy._ccode", 
-             ["chealpy/_ccode.c",],
-             extra_compile_args=['-O3'],
-             libraries=[('chealpix', {'sources':['chealpix.c']})],
-             depends=['chealpix.h'],
-             include_dirs=[get_include(), '.'],
-        ),
-      ])
+      url="http://github.com/rainwoodman/chealpy",
+      version=find_version("chealpy/version.py"),
+      zip_safe=False,
+)
 

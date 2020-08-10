@@ -24,8 +24,7 @@
 """
 
 from .high import *
-
-__version__ = 'chealpy svn 304'
+from .version import __version__
 
 def test():
   from test import testns
