@@ -27,6 +27,12 @@ extensions = [
          depends=['chealpy/chealpix.h'],
          include_dirs=[numpy.get_include(), 'chealpy/'],
     ),
+    Extension("chealpy.compress", 
+         sources=["chealpy/compress.pyx", "chealpy/chealpix.c", "chealpy/hp_compress.c"],
+         extra_compile_args=['-O3'],
+         depends=['chealpy/chealpix.h', 'chealpy/hp_compress.h'],
+         include_dirs=[numpy.get_include(), 'chealpy/'],
+    ),
 ]
 
 setup(name="chealpy",
