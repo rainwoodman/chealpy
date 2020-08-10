@@ -1,0 +1,44 @@
+language: C
+
+os:
+  - linux
+  - osx
+
+env:
+    matrix:
+        - NUMPY_VERSION=1.16 PYTHON_VERSION=3.7
+
+
+before_install:
+    - if [ $TRAVIS_BRANCH == coverity_scan -a ${TRAVIS_JOB_NUMBER##*.} != 1 ]; then exit 0; fi
+    - if [ $TRAVIS_OS_NAME == "linux" ]; then wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; fi
+    - if [ $TRAVIS_OS_NAME == "osx" ]; then wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh; bash osxinit.sh; fi
+    - bash ./miniconda.sh -b -p $HOME/miniconda
+    - export PATH=$HOME/miniconda/bin:$PATH
+    - conda update --yes conda
+
+install:
+    - conda create -q --yes -n test python=$PYTHON_VERSION cmake
+    - source activate test
+    - if [ $TRAVIS_OS_NAME == "linux" ]; then conda install -y gcc_linux-64; fi
+    - conda install -q --yes numpy=$NUMPY_VERSION pytest cython numpy
+    - python setup.py install
+
+script:
+    - pip install runtests
+    - python ./runtests.py
+    - bash check_tag.sh bigfile/version.py
+
+deploy:
+    - provider: pypi
+      distributions: sdist
+      user: "rainwoodman"
+      password:
+          secure: "l2vPJwmSojLOjHOQag7lY6kZJJLaosxqGFVmmuCuxTQEoxmnNlQAOPo/yC1rlgxxc3YHnMwPHfFSbhHBPrXfKpqUBhWDV26Fc8aj/uY1+jGxvQ9UEWu78D1CxqqwS6k90d9dR4QClrBwpuOVNqpsdqoq4u0TgHd0QxywJUq/ZnhWtYEq2wSVv2w4YIlWNLBn38Yr1KmaCC9F0sbLyqUoqRQcnSGSqabvATx3cqT04EYEMmjkUo5HtIjUlOzEKt+Ek6ycQfAFrFwX5X5gRBdouBKBpMfiK0VsHwmJczmxQlgspBJehU6us4SB7XNVS5jDNPGB/kqLFjMZICFf1xzG8VVg0gEnynYDuJUaKtI96NxgQy049bK1CHkogK/UGmzcITO/0GMkzli/s1jIxN1J67cqJ5GI5oXf1hmVRKUaTz9Jhvm0jl4QqLRD3JFf03qcMA2LfOVenEM72H9+Q1CvamfYNkDqZHAJYiCCbVjBybHfi0Nsr52eqgS9W6tJ10avUyXiLWfYZHwZYgaLq0jtpqFim3UKQDXKiYvpKuOaN7POxo3hwllt3ONJEVDJNOMyG2EGTzrPrzzxi5zj0350k0QDS9X629H/XCYfX+5ohH5cPeZjVWvE/Q893bwSCqkDOTXBDpSeZDKtXN3FHDyQAw4hRrIgSsbXyX9GAlj+vPA="
+      on:
+        tags   : true
+        condition : ${TRAVIS_JOB_NUMBER##*.} == 1
+
+      # workaround for https://github.com/travis-ci/travis-ci/issues/9303
+      edge:
+        branch: v1.8.45
