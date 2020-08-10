@@ -29,9 +29,9 @@ script:
 deploy:
     - provider: pypi
       distributions: sdist
-      user: "rainwoodman"
+      user: "__token__"  # as rainwoodman for chealpy.
       password:
-          secure: "l2vPJwmSojLOjHOQag7lY6kZJJLaosxqGFVmmuCuxTQEoxmnNlQAOPo/yC1rlgxxc3YHnMwPHfFSbhHBPrXfKpqUBhWDV26Fc8aj/uY1+jGxvQ9UEWu78D1CxqqwS6k90d9dR4QClrBwpuOVNqpsdqoq4u0TgHd0QxywJUq/ZnhWtYEq2wSVv2w4YIlWNLBn38Yr1KmaCC9F0sbLyqUoqRQcnSGSqabvATx3cqT04EYEMmjkUo5HtIjUlOzEKt+Ek6ycQfAFrFwX5X5gRBdouBKBpMfiK0VsHwmJczmxQlgspBJehU6us4SB7XNVS5jDNPGB/kqLFjMZICFf1xzG8VVg0gEnynYDuJUaKtI96NxgQy049bK1CHkogK/UGmzcITO/0GMkzli/s1jIxN1J67cqJ5GI5oXf1hmVRKUaTz9Jhvm0jl4QqLRD3JFf03qcMA2LfOVenEM72H9+Q1CvamfYNkDqZHAJYiCCbVjBybHfi0Nsr52eqgS9W6tJ10avUyXiLWfYZHwZYgaLq0jtpqFim3UKQDXKiYvpKuOaN7POxo3hwllt3ONJEVDJNOMyG2EGTzrPrzzxi5zj0350k0QDS9X629H/XCYfX+5ohH5cPeZjVWvE/Q893bwSCqkDOTXBDpSeZDKtXN3FHDyQAw4hRrIgSsbXyX9GAlj+vPA="
+        secure: "TPLw+HBrBCBwOuekVaTPTA3F6Y3AVXPRp8C52pEiqGnnRoj0n3yIbQhloymOsMSqiuUZl8a7bMY/ULfyj7fZ7lAGjGMGBDL9rZwhNgBY1Ozm4DpGCDqkkDIEg55GCjEIVq5pKIeKu0e9VMJ4V2V4DgwXDp+6Bz01FaCRgGEcggs4mJ/dkKWfNPdAc+BVx3Rzrb/9IpxZaJ8HggnqYTUW3BkYaW4uYESqQ+hcPo3wjTJOH63u4SpWAD/5n9AXeyA48ic8Bhf7m76l03R/0e4O9os7dgmEcDFy52IfiaSdmfskxsmklV+4pYfM77lj/b/rI09o9yAXCemxcjsoVYUZdVOfRIuKXm5c2rJxgt7kjjkp/n5U8Kbjoa7f9D/B8Qa3fk6PHRExW1f1xpQKoQHI7T14IhtwzXHHpt12DnxKIZ4Hrg6b6bZ6Gc0oZ5TWLXVrAACXZXMFzHSYgdCAL/DgeB8eZwT7EHoF1BuQ4zwpnQ+EInYbFerRCPAw6a2dJrKNmVFFmvVZOlt6tPOWM3Sy6kvO+ZmtaNRG3Ewr/c/d9aVsfxnJvE2sh6jJ/2q/RJwlOoF64+7tE8J7JKBDRSIAVUaFO8I1n/qq6sTaHMc78x9/ioa3g4dzk/Jsy0UDEgunjD/ZOSLY4wkrGwdBG0QAgPZJ4a1cQfRa+oXiHt6UJh8="
       on:
         tags   : true
         condition : ${TRAVIS_JOB_NUMBER##*.} == 1
