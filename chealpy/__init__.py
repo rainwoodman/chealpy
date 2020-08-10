@@ -25,10 +25,3 @@
 
 from .high import *
 from .version import __version__
-
-def test():
-  from test import testns
-  import low
-  import high
-  testns(low)
-  testns(high)

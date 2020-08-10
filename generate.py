@@ -6,22 +6,36 @@
    
 """
 
-rlz0 = [ ('_ring', 32), ('_nest', 32), ('_ring64', 64), ('_nest64', 64), ]
-rlz1 =  [ ('', 32), ('64', 64) ]
-rlz2 = [('', 32)]
+import argparse
+ap = argparse.ArgumentParser()
+ap.add_argument('precision', type=int, choices=[32, 64])
+ns = ap.parse_args()
+
+if ns.precision == 64:
+    rlz0 = [ ('64', 64) ]
+    rlz1 = [('', 32)]
+    max_nside = "MAX_NSIDE = 1<<29"
+elif ns.precision == 32:
+    rlz0 =  [ ('', 32) ]
+    rlz1 = [('', 32)]
+    max_nside = "MAX_NSIDE = 1<<13"
 
 # realizations, (name, (input), (output), (return))
 funcs = \
-  [(rlz, ('ang2pix', ('nside', 'theta', 'phi'), ('ipix',))) for rlz in rlz0] +\
-  [(rlz, ('pix2ang', ('nside', 'ipix'), ('theta', 'phi')) ) for rlz in rlz0] +\
-  [(rlz, ('vec2pix', ('nside', 'vec'), ('ipix',))         ) for rlz in rlz0] +\
-  [(rlz, ('pix2vec', ('nside', 'ipix'), ('vec',))         ) for rlz in rlz0] +\
-  [(rlz, ('nest2ring', ('nside', 'ipnest'), ('ipring',))  ) for rlz in rlz1] +\
-  [(rlz, ('ring2nest', ('nside', 'ipring'), ('ipnest',))  ) for rlz in rlz1] +\
-  [(rlz, ('npix2nside', ('npix',), (), 'nside')           ) for rlz in rlz1] +\
-  [(rlz, ('nside2npix', ('nside',), (), 'npix')           ) for rlz in rlz1] +\
-  [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz2] +\
-  [(rlz, ('vec2ang', ('vec', ), ('theta', 'phi'))         ) for rlz in rlz2] +\
+  [(rlz, ('ang2pix_ring', ('nside', 'theta', 'phi'), ('ipix',))) for rlz in rlz0] +\
+  [(rlz, ('ang2pix_nest', ('nside', 'theta', 'phi'), ('ipix',))) for rlz in rlz0] +\
+  [(rlz, ('pix2ang_ring', ('nside', 'ipix'), ('theta', 'phi')) ) for rlz in rlz0] +\
+  [(rlz, ('pix2ang_nest', ('nside', 'ipix'), ('theta', 'phi')) ) for rlz in rlz0] +\
+  [(rlz, ('vec2pix_ring', ('nside', 'vec'), ('ipix',))         ) for rlz in rlz0] +\
+  [(rlz, ('vec2pix_nest', ('nside', 'vec'), ('ipix',))         ) for rlz in rlz0] +\
+  [(rlz, ('pix2vec_ring', ('nside', 'ipix'), ('vec',))         ) for rlz in rlz0] +\
+  [(rlz, ('pix2vec_nest', ('nside', 'ipix'), ('vec',))         ) for rlz in rlz0] +\
+  [(rlz, ('nest2ring', ('nside', 'ipnest'), ('ipring',))  ) for rlz in rlz0] +\
+  [(rlz, ('ring2nest', ('nside', 'ipring'), ('ipnest',))  ) for rlz in rlz0] +\
+  [(rlz, ('npix2nside', ('npix',), (), 'nside')           ) for rlz in rlz0] +\
+  [(rlz, ('nside2npix', ('nside',), (), 'npix')           ) for rlz in rlz0] +\
+  [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz1] +\
+  [(rlz, ('vec2ang', ('vec', ), ('theta', 'phi'))         ) for rlz in rlz1] +\
   []
 docstrings = {
  'ang2pix': 'Converting theta(0 to pi), phi(0 to 2 pi) to pix number',
@@ -166,10 +180,9 @@ def generate_ufunc(rlz, func):
      'op_flags': ','.join(op_flags)
      }
 
-  defstatement = """def %(name)s%(postfix)s (%(argin)s, %(argout)s):""" \
+  defstatement = """def %(name)s (%(argin)s, %(argout)s):""" \
     % {
       'name' : name,
-      'postfix' : postfix,
       'argin' : ','.join(input),
       'argout' : ','.join(['%s = None' % var for var in output_ret])
   }
@@ -308,12 +321,17 @@ from libc.stdint cimport *
 import numpy
 numpy.import_array()
 
+%(max_nside)s
+
 %(prototypes)s
 
 %(ufuncs)s
 """ 
 
-print FILE % {
+import sys
+
+sys.stdout.write(FILE % {
+   'max_nside' : max_nside,
    'prototypes' : generate_prototypes(funcs),
    'ufuncs' : '\n'.join(generate_ufunc(*func) for func in funcs)
-   }
+   })

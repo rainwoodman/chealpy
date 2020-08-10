@@ -15,8 +15,14 @@ def find_version(path):
 
 
 extensions = [
-    Extension("chealpy._ccode", 
-         sources=["chealpy/_ccode.pyx", "chealpy/chealpix.c"],
+    Extension("chealpy.low", 
+         sources=["chealpy/low.pyx", "chealpy/chealpix.c"],
+         extra_compile_args=['-O3'],
+         depends=['chealpy/chealpix.h'],
+         include_dirs=[numpy.get_include(), 'chealpy/'],
+    ),
+    Extension("chealpy.high", 
+         sources=["chealpy/high.pyx", "chealpy/chealpix.c"],
          extra_compile_args=['-O3'],
          depends=['chealpy/chealpix.h'],
          include_dirs=[numpy.get_include(), 'chealpy/'],
