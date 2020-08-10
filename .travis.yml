@@ -24,7 +24,7 @@ install:
 script:
     - pip install runtests
     - python ./runtests.py
-    - bash check_tag.sh bigfile/version.py
+    - bash check_tag.sh chealpy/version.py
 
 deploy:
     - provider: pypi
