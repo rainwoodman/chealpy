@@ -1,45 +1,66 @@
+chealpy is a minimal Python package for HealPix.
 
-chealpy is the Python binding of chealpix.
+  HealPix embeds S2 (sphere / vectors with |r| = 1) into a plane, conserving
+  the area.
 
   chealpix is the C implementation of HealPix.
-  HealPix linearizes spherical coordinate into integers.
 
   You will need numpy > 1.6.
   
-  The installation is just 
+  To install:
+
     python setup.py install
 
   Refer to HealPix manual for usage.
 
   Two precisions are provided:
-    chealpy.high :upto nside=1<<29
-    chealpy.low : upto nside=8192
 
-  functions under the namespace chealpy are imported from chealpy.high
+    - chealpy.high : upto nside=1<<29
+    - chealpy.low : upto nside=8192
 
-  MAX_NSIDES is the upper limit of nsides
+  chealpy.low is somewhat faster, but chealpy allows higher resolutions.
 
-  wrappers are automatically generated Cython code, making use 
-  of NpyIter API.
+  Functions under the namespace chealpy are imported from chealpy.high.
 
-  For a feature-rich Healpix C++ binding, take a look at healpy.
+  high.MAX_NSIDES and low.MAX_NSIDES is the upper limit of nsides.
 
-  Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
+  Wrappers are automatically generated Cython code, making use of the NpyIter C-API.
+  There are probably cleaner ways of achiving the same nowadays; this mechanism was
+  was crafted 2012.
 
-  Description of Functions:
+Plans:
 
-def ang2pix_ring (nside,theta,phi,ipix=None)
-  angle to pix
-def ang2pix_nest (nside,theta,phi, ipix = None):
-def pix2ang_ring (nside,ipix, theta = None,phi = None):
-def pix2ang_nest (nside,ipix, theta = None,phi = None):
-def vec2pix_ring (nside,vec, ipix = None):
-def vec2pix_nest (nside,vec, ipix = None):
-def pix2vec_ring (nside,ipix, vec = None):
-def pix2vec_nest (nside,ipix, vec = None):
-def nest2ring (nside,ipnest, ipring = None):
-def ring2nest (nside,ipring, ipnest = None):
-def npix2nside (npix, nside = None):
-def nside2npix (nside, npix = None):
-def ang2vec (theta,phi, vec = None):
-def vec2ang (vec, theta = None,phi = None):
+  - Add sparse maps and lossy compression.
+  compression = low pass filter / downsample + sparse map.
+  efficient if the high frequency modes are spatially localized.
+
+  - binning / histograms stats (from mpl_aea)
+
+  - visualization Integration with Cartopy and matplotlib.axes. 
+    mostly from http://github.com/rainwoodman/mpl_aea, but needs some rewrites.
+    may need to rewrite chealpix.c / or add new routines to upstream.
+
+  Probably should never support transforms (anafast). For a feature-rich
+  Healpix C++ binding, take a look at healpy.
+
+
+Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
+        Yu Feng 2020 <yfeng1@berkeley.edu>/<feyu@google.com>
+
+
+List of Functions (all propertly vectorized for numpy):
+
+    def ang2pix_ring (nside,theta,phi,i pix = None)
+    def ang2pix_nest (nside,theta,phi, ipix = None)
+    def pix2ang_ring (nside,ipix, theta = None,phi = None)
+    def pix2ang_nest (nside,ipix, theta = None,phi = None)
+    def vec2pix_ring (nside,vec, ipix = None)
+    def vec2pix_nest (nside,vec, ipix = None)
+    def pix2vec_ring (nside,ipix, vec = None)
+    def pix2vec_nest (nside,ipix, vec = None)
+    def nest2ring (nside,ipnest, ipring = None)
+    def ring2nest (nside,ipring, ipnest = None)
+    def npix2nside (npix, nside = None)
+    def nside2npix (nside, npix = None)
+    def ang2vec (theta,phi, vec = None)
+    def vec2ang (vec, theta = None, phi = None)
