@@ -36,6 +36,8 @@ funcs = \
   [(rlz, ('nside2npix', ('nside',), (), 'npix')           ) for rlz in rlz0] +\
   [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz1] +\
   [(rlz, ('vec2ang', ('vec', ), ('theta', 'phi'))         ) for rlz in rlz1] +\
+  [(rlz, ('ang2xy', ('theta', 'phi'), ('x', 'y'))         ) for rlz in rlz1] +\
+  [(rlz, ('xy2ang', ('x', 'y'), ('theta', 'phi'))         ) for rlz in rlz1] +\
   []
 docstrings = {
  'ang2pix': 'Converting theta(0 to pi), phi(0 to 2 pi) to pix number',
@@ -55,7 +57,7 @@ var_types = {}
 var_types.update([(var, int_type) for var in \
           ['npix', 'ipix', 'nside', 'ipring', 'ipnest']])
 var_types.update([(var, float_type) for var in \
-          ['theta', 'phi']])
+          ['theta', 'phi', 'x', 'y']])
 var_types.update([(var, vec_type) for var in \
           ['vec']])
 var_types.update([(var, void_type) for var in \

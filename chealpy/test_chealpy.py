@@ -3,6 +3,8 @@ import pytest
 import chealpy.low as low
 import chealpy.high as high
 import numpy
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_equal
 
 SUITE  = [
 (low, 4, 32),
@@ -19,7 +21,7 @@ def test_nest_vs_ring(ns, nside, dpix):
 
   ip2 = ns.nest2ring(nside, ipix)
   ip1 = ns.ring2nest(nside, ip2)
-  assert (ip1 == ipix).all()
+  assert_array_equal(ip1, ipix)
 
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
@@ -29,7 +31,7 @@ def test_pix2ang_nest(ns, nside, dpix):
 
   theta, phi = ns.pix2ang_nest(nside, ipix)
   ip1 = ns.ang2pix_nest(nside, theta, phi)
-  assert (ip1 == ipix).all()
+  assert_array_equal(ip1, ipix)
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
 def test_pix2vec_nest(ns, nside, dpix):
@@ -38,7 +40,7 @@ def test_pix2vec_nest(ns, nside, dpix):
 
   vec = ns.pix2vec_nest(nside, ipix)
   ip1 = ns.vec2pix_nest(nside, vec)
-  assert (ip1 == ipix).all()
+  assert_array_equal(ip1, ipix)
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
 def test_pix2ang_ring(ns, nside, dpix):
@@ -47,7 +49,7 @@ def test_pix2ang_ring(ns, nside, dpix):
 
   theta, phi = ns.pix2ang_ring(nside, ipix)
   ip1 = ns.ang2pix_ring(nside, theta, phi)
-  assert (ip1 == ipix).all()
+  assert_array_equal(ip1, ipix)
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
 def test_pix2vec_ring(ns, nside, dpix):
@@ -56,5 +58,29 @@ def test_pix2vec_ring(ns, nside, dpix):
 
   vec = ns.pix2vec_ring(nside, ipix)
   ip1 = ns.vec2pix_ring(nside, vec)
-  assert (ip1 == ipix).all()
+  assert_array_equal(ip1, ipix)
+
+@pytest.mark.parametrize("ns, nside, dpix", SUITE)
+def test_xy2ang_ring(ns, nside, dpix):
+  npix = ns.nside2npix(nside)
+  ipix = numpy.arange(0, npix, dpix)
+
+  theta, phi = ns.pix2ang_ring(nside, ipix)
+  x, y = ns.ang2xy(theta, phi)
+  theta1, phi1 = ns.xy2ang(x, y)
+
+  assert_almost_equal(theta1, theta)
+  assert_almost_equal(phi1, phi)
+
+@pytest.mark.parametrize("ns, nside, dpix", SUITE)
+def test_xy2ang_nest(ns, nside, dpix):
+  npix = ns.nside2npix(nside)
+  ipix = numpy.arange(0, npix, dpix)
+
+  theta, phi = ns.pix2ang_nest(nside, ipix)
+  x, y = ns.ang2xy(theta, phi)
+  theta1, phi1 = ns.xy2ang(x, y)
+
+  assert_almost_equal(theta1, theta)
+  assert_almost_equal(phi1, phi)
 

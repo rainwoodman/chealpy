@@ -25,6 +25,8 @@ cdef extern from "chealpix.h":
   int64_t _nside2npix64 "nside2npix64" (int64_t _nside) nogil
   void _ang2vec "ang2vec" (double _theta, double _phi, double * _vec) nogil
   void _vec2ang "vec2ang" (double * _vec, double * _theta, double * _phi) nogil
+  void _ang2xy "ang2xy" (double _theta, double _phi, double * _x, double * _y) nogil
+  void _xy2ang "xy2ang" (double _x, double _y, double * _theta, double * _phi) nogil
 
 
 def ang2pix_ring (nside,theta,phi, ipix = None):
@@ -452,6 +454,70 @@ def vec2ang (vec, theta = None,phi = None):
         _vec2ang ( _vec, &_theta, &_phi) 
         (<double * > citer.data[3])[0] = _theta 
         (<double * > citer.data[4])[0] = _phi 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return theta,phi
+
+
+def ang2xy (theta,phi, x = None,y = None):
+  "ang2xy"
+  shape = numpy.broadcast(1, theta,phi).shape 
+  if x is None: x = numpy.empty(shape, dtype='f8')
+  if y is None: y = numpy.empty(shape, dtype='f8')
+
+  iter = numpy.nditer([theta,phi,x,y],
+       op_dtypes=['f8','f8','f8','f8'],
+       op_flags=[['readonly'],['readonly'],['writeonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef double _theta
+  cdef double _phi
+  cdef double _x
+  cdef double _y
+  with nogil:
+    while size >0:
+      while size > 0:
+        _theta = (<double * > citer.data[0])[0] 
+        _phi = (<double * > citer.data[1])[0] 
+        _ang2xy ( _theta, _phi, &_x, &_y) 
+        (<double * > citer.data[2])[0] = _x 
+        (<double * > citer.data[3])[0] = _y 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return x,y
+
+
+def xy2ang (x,y, theta = None,phi = None):
+  "xy2ang"
+  shape = numpy.broadcast(1, x,y).shape 
+  if theta is None: theta = numpy.empty(shape, dtype='f8')
+  if phi is None: phi = numpy.empty(shape, dtype='f8')
+
+  iter = numpy.nditer([x,y,theta,phi],
+       op_dtypes=['f8','f8','f8','f8'],
+       op_flags=[['readonly'],['readonly'],['writeonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef double _x
+  cdef double _y
+  cdef double _theta
+  cdef double _phi
+  with nogil:
+    while size >0:
+      while size > 0:
+        _x = (<double * > citer.data[0])[0] 
+        _y = (<double * > citer.data[1])[0] 
+        _xy2ang ( _x, _y, &_theta, &_phi) 
+        (<double * > citer.data[2])[0] = _theta 
+        (<double * > citer.data[3])[0] = _phi 
         npyiter.advance(&citer)
         size = size -1
       size = npyiter.next(&citer) 
