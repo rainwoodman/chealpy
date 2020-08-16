@@ -36,14 +36,16 @@ funcs = \
   [(rlz, ('nside2npix', ('nside',), (), 'npix')           ) for rlz in rlz0] +\
   [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz1] +\
   [(rlz, ('vec2ang', ('vec', ), ('theta', 'phi'))         ) for rlz in rlz1] +\
-  [(rlz, ('ang2xy', ('theta', 'phi'), ('x', 'y'))         ) for rlz in rlz1] +\
-  [(rlz, ('xy2ang', ('x', 'y'), ('theta', 'phi'))         ) for rlz in rlz1] +\
+  [(rlz, ('ang2gsp', ('theta', 'phi'), ('x', 'y'))         ) for rlz in rlz1] +\
+  [(rlz, ('gsp2ang', ('x', 'y'), ('theta', 'phi'))         ) for rlz in rlz1] +\
   []
 docstrings = {
  'ang2pix': 'Converting theta(0 to pi), phi(0 to 2 pi) to pix number',
  'pix2ang': 'Converting pix number to theta(0 to pi), phi(0 to 2 pi)',
  'vec2pix': 'Converting 3 vectors (..., 3) to pix number',
  'pix2vec': 'Converting pix number to 3 vectors (..., 3)',
+ 'ang2gsp': 'theta(0, pi), phi(0, 2pi) to global spherical projection xs(0, 2pi), ys(-pi/2, pi/2).',
+ 'gsp2ang': 'global spherical projection xs(0, 2pi), ys(-pi/2, pi/2) to theta(0, pi), phi(0, 2pi).',
 }
 
 # ctype, numpy.dtype

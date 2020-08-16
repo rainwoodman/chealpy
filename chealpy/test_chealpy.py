@@ -61,25 +61,25 @@ def test_pix2vec_ring(ns, nside, dpix):
   assert_array_equal(ip1, ipix)
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
-def test_xy2ang_ring(ns, nside, dpix):
+def test_gsp2ang_ring(ns, nside, dpix):
   npix = ns.nside2npix(nside)
   ipix = numpy.arange(0, npix, dpix)
 
   theta, phi = ns.pix2ang_ring(nside, ipix)
-  x, y = ns.ang2xy(theta, phi)
-  theta1, phi1 = ns.xy2ang(x, y)
+  x, y = ns.ang2gsp(theta, phi)
+  theta1, phi1 = ns.gsp2ang(x, y)
 
   assert_almost_equal(theta1, theta)
   assert_almost_equal(phi1, phi)
 
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
-def test_xy2ang_nest(ns, nside, dpix):
+def test_gsp2ang_nest(ns, nside, dpix):
   npix = ns.nside2npix(nside)
   ipix = numpy.arange(0, npix, dpix)
 
   theta, phi = ns.pix2ang_nest(nside, ipix)
-  x, y = ns.ang2xy(theta, phi)
-  theta1, phi1 = ns.xy2ang(x, y)
+  x, y = ns.ang2gsp(theta, phi)
+  theta1, phi1 = ns.gsp2ang(x, y)
 
   assert_almost_equal(theta1, theta)
   assert_almost_equal(phi1, phi)

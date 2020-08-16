@@ -21,7 +21,7 @@ static double fmodulo (double v1, double v2)
   return (tmp==v2) ? 0. : tmp;
   }
 
-static void ang2xy_z_phi64(double z, double s, double phi, double *x, double *y)
+static void ang2gsp_z_phi64(double z, double s, double phi, double *x, double *y)
 {
     double za = fabs(z);
     if (za < twothird)  {
@@ -51,13 +51,13 @@ static void ang2xy_z_phi64(double z, double s, double phi, double *x, double *y)
  * Convert :math:`\theta` :math:`\phi` to :math:`x_s` :math:`y_s`.
  * Refer to Section 4.4 of http://adsabs.harvard.edu/abs/2005ApJ...622..759G
  */
-void ang2xy(double theta, double phi, double *x, double *y)
+void ang2gsp(double theta, double phi, double *x, double *y)
 {
   double cth=cos(theta), sth=(fabs(cth)>0.99) ? sin(theta) : -5;
-  ang2xy_z_phi64 (cth,sth,phi,x,y);
+  ang2gsp_z_phi64 (cth,sth,phi,x,y);
 }
 
-static void xy2ang_z_phi64 (double x, double y,
+static void gsp2ang_z_phi64 (double x, double y,
   double *z, double *s, double *phi)
 {
     double ya = fabs(y);
@@ -94,10 +94,10 @@ static void xy2ang_z_phi64 (double x, double y,
  * Convert :math:`x_s` :math:`y_s` to :math:`theta` :math:`phi`.
  * Refer to Section 4.4 of http://adsabs.harvard.edu/abs/2005ApJ...622..759G
  */
-void xy2ang(double x, double y, double *theta, double *phi)
+void gsp2ang(double x, double y, double *theta, double *phi)
 {
   double z,s;
-  xy2ang_z_phi64 (x,y,&z,&s,phi);
+  gsp2ang_z_phi64 (x,y,&z,&s,phi);
   *theta= (s<-2) ? acos(z) : atan2(s,z);
 }
 

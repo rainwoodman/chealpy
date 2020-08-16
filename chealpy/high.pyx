@@ -25,8 +25,8 @@ cdef extern from "chealpix.h":
   int64_t _nside2npix64 "nside2npix64" (int64_t _nside) nogil
   void _ang2vec "ang2vec" (double _theta, double _phi, double * _vec) nogil
   void _vec2ang "vec2ang" (double * _vec, double * _theta, double * _phi) nogil
-  void _ang2xy "ang2xy" (double _theta, double _phi, double * _x, double * _y) nogil
-  void _xy2ang "xy2ang" (double _x, double _y, double * _theta, double * _phi) nogil
+  void _ang2gsp "ang2gsp" (double _theta, double _phi, double * _x, double * _y) nogil
+  void _gsp2ang "gsp2ang" (double _x, double _y, double * _theta, double * _phi) nogil
 
 
 def ang2pix_ring (nside,theta,phi, ipix = None):
@@ -460,8 +460,8 @@ def vec2ang (vec, theta = None,phi = None):
   return theta,phi
 
 
-def ang2xy (theta,phi, x = None,y = None):
-  "ang2xy"
+def ang2gsp (theta,phi, x = None,y = None):
+  "theta(0, pi), phi(0, 2pi) to global spherical projection xs(0, 2pi), ys(-pi/2, pi/2)."
   shape = numpy.broadcast(1, theta,phi).shape 
   if x is None: x = numpy.empty(shape, dtype='f8')
   if y is None: y = numpy.empty(shape, dtype='f8')
@@ -483,7 +483,7 @@ def ang2xy (theta,phi, x = None,y = None):
       while size > 0:
         _theta = (<double * > citer.data[0])[0] 
         _phi = (<double * > citer.data[1])[0] 
-        _ang2xy ( _theta, _phi, &_x, &_y) 
+        _ang2gsp ( _theta, _phi, &_x, &_y) 
         (<double * > citer.data[2])[0] = _x 
         (<double * > citer.data[3])[0] = _y 
         npyiter.advance(&citer)
@@ -492,8 +492,8 @@ def ang2xy (theta,phi, x = None,y = None):
   return x,y
 
 
-def xy2ang (x,y, theta = None,phi = None):
-  "xy2ang"
+def gsp2ang (x,y, theta = None,phi = None):
+  "global spherical projection xs(0, 2pi), ys(-pi/2, pi/2) to theta(0, pi), phi(0, 2pi)."
   shape = numpy.broadcast(1, x,y).shape 
   if theta is None: theta = numpy.empty(shape, dtype='f8')
   if phi is None: phi = numpy.empty(shape, dtype='f8')
@@ -515,7 +515,7 @@ def xy2ang (x,y, theta = None,phi = None):
       while size > 0:
         _x = (<double * > citer.data[0])[0] 
         _y = (<double * > citer.data[1])[0] 
-        _xy2ang ( _x, _y, &_theta, &_phi) 
+        _gsp2ang ( _x, _y, &_theta, &_phi) 
         (<double * > citer.data[2])[0] = _theta 
         (<double * > citer.data[3])[0] = _phi 
         npyiter.advance(&citer)
