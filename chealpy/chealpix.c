@@ -317,51 +317,14 @@ static int ang2pix_ring_z_phi (long nside_, double z, double phi)
     }
   }
 
-static void pix2ang_ring_z_phi (int nside_, int pix, double *z, double *phi)
-  {
-  long ncap_=nside_*(nside_-1)*2;
-  long npix_=12*nside_*nside_;
-  double fact2_ = 4./npix_;
-  if (pix<ncap_) /* North Polar cap */
-    {
-    int iring = (1+isqrt(1+2*pix))>>1; /* counted from North pole */
-    int iphi  = (pix+1) - 2*iring*(iring-1);
-
-    *z = 1.0 - (iring*iring)*fact2_;
-    *phi = (iphi-0.5) * halfpi/iring;
-    }
-  else if (pix<(npix_-ncap_)) /* Equatorial region */
-    {
-    double fact1_  = (nside_<<1)*fact2_;
-    int ip  = pix - ncap_;
-    int iring = ip/(4*nside_) + nside_; /* counted from North pole */
-    int iphi  = ip%(4*nside_) + 1;
-    /* 1 if iring+nside is odd, 1/2 otherwise */
-    double fodd = ((iring+nside_)&1) ? 1 : 0.5;
-
-    int nl2 = 2*nside_;
-    *z = (nl2-iring)*fact1_;
-    *phi = (iphi-fodd) * pi/nl2;
-    }
-  else /* South Polar cap */
-    {
-    int ip = npix_ - pix;
-    int iring = (1+isqrt(2*ip-1))>>1; /* counted from South pole */
-    int iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
-
-    *z = -1.0 + (iring*iring)*fact2_;
-    *phi = (iphi-0.5) * halfpi/iring;
-    }
-  }
-
-static void pix2ang_nest_z_phi (int nside_, int pix, double *z, double *phi)
+static void xyf2ang_z_phi(int nside_, int ix, int iy, int face_num,
+  double *z, double *phi)
   {
   int nl4 = nside_*4;
   int npix_=12*nside_*nside_;
   double fact2_ = 4./npix_;
-  int face_num, ix, iy, nr, kshift;
+  int nr, kshift;
 
-  nest2xyf(nside_,pix,&ix,&iy,&face_num);
   int jr = (jrll[face_num]*nside_) - ix - iy - 1;
 
   if (jr<nside_)
@@ -389,6 +352,20 @@ static void pix2ang_nest_z_phi (int nside_, int pix, double *z, double *phi)
   if (jp<1) jp+=nl4;
 
   *phi = (jp-(kshift+1)*0.5)*(halfpi/nr);
+  }
+
+static void pix2ang_ring_z_phi (int nside_, int pix, double *z, double *phi)
+  {
+  int face_num, ix, iy;
+  ring2xyf(nside_,pix,&ix,&iy,&face_num);
+  xyf2ang_z_phi(nside_,ix,iy,face_num,z,phi);
+  }
+
+static void pix2ang_nest_z_phi (int nside_, int pix, double *z, double *phi)
+  {
+  int face_num, ix, iy;
+  nest2xyf(nside_,pix,&ix,&iy,&face_num);
+  xyf2ang_z_phi(nside_,ix,iy,face_num,z,phi);
   }
 
 void ang2vec(double theta, double phi, double *vec)
@@ -729,60 +706,14 @@ static int64_t ang2pix_ring_z_phi64 (int64_t nside_, double z, double s,
     }
   }
 
-static void pix2ang_ring_z_phi64 (int64_t nside_, int64_t pix,
+static void xyf2ang_z_phi64(int64_t nside_, int ix, int iy, int face_num,
   double *z, double *s, double *phi)
-  {
-  int64_t ncap_=nside_*(nside_-1)*2;
-  int64_t npix_=12*nside_*nside_;
-  double fact2_  = 4./npix_;
-  *s=-5;
-  if (pix<ncap_) /* North Polar cap */
-    {
-    int64_t iring = (1+isqrt64(1+2*pix))>>1; /* from N pole */
-    int64_t iphi  = (pix+1) - 2*iring*(iring-1);
-    double tmp=(iring*iring)*fact2_;
-
-    *z = 1.0 - tmp;
-    if (*z>0.99) *s=sqrt(tmp*(2.-tmp));
-    *phi = (iphi-0.5) * halfpi/iring;
-    }
-  else if (pix<(npix_-ncap_)) /* Equatorial region */
-    {
-    double fact1_  = (nside_<<1)*fact2_;
-    int64_t ip  = pix - ncap_;
-    int64_t iring = ip/(4*nside_) + nside_; /* counted from North pole */
-    int64_t iphi  = ip%(4*nside_) + 1;
-    /* 1 if iring+nside is odd, 1/2 otherwise */
-    double fodd = ((iring+nside_)&1) ? 1 : 0.5;
-
-    int64_t nl2 = 2*nside_;
-    *z = (nl2-iring)*fact1_;
-    *phi = (iphi-fodd) * pi/nl2;
-    }
-  else /* South Polar cap */
-    {
-    int64_t ip = npix_ - pix;
-    int64_t iring = (1+isqrt64(2*ip-1))>>1; /* from S pole */
-    int64_t iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
-
-    double tmp=(iring*iring)*fact2_;
-    *z = tmp - 1.0;
-    if (*z<-0.99) *s=sqrt(tmp*(2.-tmp));
-    *phi = (iphi-0.5) * halfpi/iring;
-    }
-  }
-
-static void pix2ang_nest_z_phi64 (int64_t nside_, int64_t pix, double *z,
-  double *s, double *phi)
   {
   int64_t nl4 = nside_*4;
   int64_t npix_=12*nside_*nside_;
   double fact2_ = 4./npix_;
-  int face_num, ix, iy;
   int64_t jr, nr, kshift, jp;
   *s=-5;
-
-  nest2xyf64(nside_,pix,&ix,&iy,&face_num);
   jr = (jrll[face_num]*nside_) - ix - iy - 1;
 
   if (jr<nside_)
@@ -816,6 +747,23 @@ static void pix2ang_nest_z_phi64 (int64_t nside_, int64_t pix, double *z,
   if (jp<1) jp+=nl4;
 
   *phi = (jp-(kshift+1)*0.5)*(halfpi/nr);
+  }
+
+
+static void pix2ang_ring_z_phi64 (int64_t nside_, int64_t pix,
+  double *z, double *s, double *phi)
+  {
+  int face_num, ix, iy;
+  ring2xyf64(nside_,pix,&ix,&iy,&face_num);
+  xyf2ang_z_phi64(nside_,ix,iy,face_num,z,s,phi);
+  }
+
+static void pix2ang_nest_z_phi64 (int64_t nside_, int64_t pix, double *z,
+  double *s, double *phi)
+  {
+  int face_num, ix, iy;
+  nest2xyf64(nside_,pix,&ix,&iy,&face_num);
+  xyf2ang_z_phi64(nside_,ix,iy,face_num,z,s,phi);
   }
 
 long npix2nside64(int64_t npix)
