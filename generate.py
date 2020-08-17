@@ -30,6 +30,12 @@ funcs = \
   [(rlz, ('vec2pix_nest', ('nside', 'vec'), ('ipix',))         ) for rlz in rlz0] +\
   [(rlz, ('pix2vec_ring', ('nside', 'ipix'), ('vec',))         ) for rlz in rlz0] +\
   [(rlz, ('pix2vec_nest', ('nside', 'ipix'), ('vec',))         ) for rlz in rlz0] +\
+  [(rlz, ('gsp2pix_ring', ('nside', 'x', 'y'), ('ipix',))         ) for rlz in rlz0] +\
+  [(rlz, ('gsp2pix_nest', ('nside', 'x', 'y'), ('ipix',))         ) for rlz in rlz0] +\
+  [(rlz, ('pix2gsp_ring', ('nside', 'ipix'), ('x', 'y'))         ) for rlz in rlz0] +\
+  [(rlz, ('pix2gsp_nest', ('nside', 'ipix'), ('x', 'y'))         ) for rlz in rlz0] +\
+  [(rlz, ('ang2ngb_ring', ('nside', 'theta', 'phi'), ('ipixvec', 'wvec'))         ) for rlz in rlz0] +\
+  [(rlz, ('ang2ngb_nest', ('nside', 'theta', 'phi'), ('ipixvec', 'wvec'))         ) for rlz in rlz0] +\
   [(rlz, ('nest2ring', ('nside', 'ipnest'), ('ipring',))  ) for rlz in rlz0] +\
   [(rlz, ('ring2nest', ('nside', 'ipring'), ('ipnest',))  ) for rlz in rlz0] +\
   [(rlz, ('npix2nside', ('npix',), (), 'nside')           ) for rlz in rlz0] +\
@@ -53,6 +59,8 @@ int_type = {32: ('long', 'int'), 64: ('int64_t', 'i8')}
 float_type = {32: ('double', 'f8'), 64: ('double', 'f8')}
 vec_type = {32: ('double *', ('f8', 3)), 64: ('double *', ('f8', 3))}
 void_type = {32: ('void', ''), 64: ('void', '')}
+ipixvec_type = {32: ('long *', ('int', 3)), 64: ('int64_t *', ('i8', 3))}
+wvec_type = {32: ('double * ', ('f8', 3)), 64: ('double *', ('f8', 3))}
 
 # populate type information
 var_types = {}
@@ -62,6 +70,10 @@ var_types.update([(var, float_type) for var in \
           ['theta', 'phi', 'x', 'y']])
 var_types.update([(var, vec_type) for var in \
           ['vec']])
+var_types.update([(var, wvec_type) for var in \
+          ['wvec']])
+var_types.update([(var, ipixvec_type) for var in \
+          ['ipixvec']])
 var_types.update([(var, void_type) for var in \
           [None]])
 
