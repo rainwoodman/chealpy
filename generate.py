@@ -59,8 +59,8 @@ int_type = {32: ('long', 'int'), 64: ('int64_t', 'i8')}
 float_type = {32: ('double', 'f8'), 64: ('double', 'f8')}
 vec_type = {32: ('double *', ('f8', 3)), 64: ('double *', ('f8', 3))}
 void_type = {32: ('void', ''), 64: ('void', '')}
-ipixvec_type = {32: ('long *', ('int', 3)), 64: ('int64_t *', ('i8', 3))}
-wvec_type = {32: ('double * ', ('f8', 3)), 64: ('double *', ('f8', 3))}
+ipixvec_type = {32: ('long *', ('int', 5)), 64: ('int64_t *', ('i8', 5))}
+wvec_type = {32: ('double * ', ('f8', 5)), 64: ('double *', ('f8', 5))}
 
 # populate type information
 var_types = {}

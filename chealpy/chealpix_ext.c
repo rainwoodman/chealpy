@@ -186,7 +186,6 @@ void pix2gsp_nest64(int64_t nside_, int64_t ipix, double *x, double *y)
     ang2gsp(theta, phi, x,y);
 }
 
-
 void ang2ngb_ring64(int64_t nside_, double theta, double phi,
     int64_t * pix,
     double * w)
@@ -221,22 +220,23 @@ void ang2ngb_ring64(int64_t nside_, double theta, double phi,
     double p = 0.75 * halfstep;
     gsp2pix_ring64(nside_, xc + s1*p, yc + s1*p, &pix[1]);
     gsp2pix_ring64(nside_, xc + s2*p, yc - s2*p, &pix[2]);
-
-    /* abs(t) interpolates between 0 and l; but due to pix constraint,
-     * abs(t) < 0.5 l */
-    const double l = sqrt(2) * halfstep;
+    gsp2pix_ring64(nside_, xc + (s1+s2+0.125)*p, yc+(s1-s2-0.125)*p, &pix[3]);
+    gsp2pix_ring64(nside_, xc + (s1+s2-0.125)*p, yc+(s1-s2+0.125)*p, &pix[4]);
     t1 = fabs(t1);
     t2 = fabs(t2);
-    w[1] = l - t2;
-    w[2] = l - t1;
+    w[1] = step - t2;  /* using step to avoid a discontinuity; not sure why */
+    w[2] = step - t1;
     w[0] = w[1]*w[2];
     w[1] = t1*w[1];
     w[2] = t2*w[2];
-
-    double inv_norm = 1 / (w[0] + w[1] + w[2]);
+    w[3] = t1*t2 * 0.5;
+    w[4] = w[3];
+    double inv_norm = 1 / (w[0] + w[1] + w[2] + w[3] + w[4]);
     w[0] *= inv_norm;
     w[1] *= inv_norm;
     w[2] *= inv_norm;
+    w[3] *= inv_norm;
+    w[4] *= inv_norm;
 }
 
 void ang2ngb_nest64(int64_t nside_, double theta, double phi,
@@ -244,29 +244,29 @@ void ang2ngb_nest64(int64_t nside_, double theta, double phi,
     double * w)
 {
     ang2ngb_ring64(nside_, theta, phi, pix, w);
-    ring2nest64(nside_, pix[0], &pix[0]);
-    ring2nest64(nside_, pix[1], &pix[1]);
-    ring2nest64(nside_, pix[2], &pix[2]);
+    for(int i=0; i<5; i++) {
+        ring2nest64(nside_, pix[i], &pix[i]);
+    }
 }
 
 void ang2ngb_ring(long nside_, double theta, double phi,
     long * pix,
     double * w)
 {
-    int64_t pix64[3];
+    int64_t pix64[5];
     ang2ngb_ring64(nside_, theta, phi, pix64, w);
-    pix[0] = pix64[0];
-    pix[1] = pix64[1];
-    pix[2] = pix64[2];
+    for(int i=0; i<5; i ++) {
+        pix[i] = pix64[i];
+    }
 }
 
 void ang2ngb_nest(long nside_, double theta, double phi,
     long * pix,
     double * w)
 {
-    int64_t pix64[3];
+    int64_t pix64[5];
     ang2ngb_nest64(nside_, theta, phi, pix64, w);
-    pix[0] = pix64[0];
-    pix[1] = pix64[1];
-    pix[2] = pix64[2];
+    for(int i=0; i<5; i ++) {
+        pix[i] = pix64[i];
+    }
 }

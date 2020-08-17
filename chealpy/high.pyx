@@ -418,12 +418,12 @@ def pix2gsp_nest (nside,ipix, x = None,y = None):
 def ang2ngb_ring (nside,theta,phi, ipixvec = None,wvec = None):
   "ang2ngb_ring"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
-  if ipixvec is None: ipixvec = numpy.empty(shape, dtype=('i8', 3))
-  if wvec is None: wvec = numpy.empty(shape, dtype=('f8', 3))
+  if ipixvec is None: ipixvec = numpy.empty(shape, dtype=('i8', 5))
+  if wvec is None: wvec = numpy.empty(shape, dtype=('f8', 5))
 
-  iter = numpy.nditer([nside,theta,phi,ipixvec[...,0],ipixvec[...,1],ipixvec[...,2],wvec[...,0],wvec[...,1],wvec[...,2]],
-       op_dtypes=['i8','f8','f8','i8','i8','i8','f8','f8','f8'],
-       op_flags=[['readonly'],['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly']],
+  iter = numpy.nditer([nside,theta,phi,ipixvec[...,0],ipixvec[...,1],ipixvec[...,2],ipixvec[...,3],ipixvec[...,4],wvec[...,0],wvec[...,1],wvec[...,2],wvec[...,3],wvec[...,4]],
+       op_dtypes=['i8','f8','f8','i8','i8','i8','i8','i8','f8','f8','f8','f8','f8'],
+       op_flags=[['readonly'],['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly']],
        flags = ['buffered', 'external_loop', 'zerosize_ok'],
        casting = 'unsafe')
   
@@ -432,9 +432,9 @@ def ang2ngb_ring (nside,theta,phi, ipixvec = None,wvec = None):
   cdef int64_t _nside
   cdef double _theta
   cdef double _phi
-  cdef numpy.ndarray ipixvec_a = numpy.empty(0, dtype=('i8', 3))
+  cdef numpy.ndarray ipixvec_a = numpy.empty(0, dtype=('i8', 5))
   cdef int64_t * _ipixvec = <int64_t *>ipixvec_a.data
-  cdef numpy.ndarray wvec_a = numpy.empty(0, dtype=('f8', 3))
+  cdef numpy.ndarray wvec_a = numpy.empty(0, dtype=('f8', 5))
   cdef double * _wvec = <double *>wvec_a.data
   with nogil:
     while size >0:
@@ -446,9 +446,13 @@ def ang2ngb_ring (nside,theta,phi, ipixvec = None,wvec = None):
         (<int64_t *> citer.data[3])[0] = _ipixvec[0] 
         (<int64_t *> citer.data[4])[0] = _ipixvec[1] 
         (<int64_t *> citer.data[5])[0] = _ipixvec[2] 
-        (<double *> citer.data[6])[0] = _wvec[0] 
-        (<double *> citer.data[7])[0] = _wvec[1] 
-        (<double *> citer.data[8])[0] = _wvec[2] 
+        (<int64_t *> citer.data[6])[0] = _ipixvec[3] 
+        (<int64_t *> citer.data[7])[0] = _ipixvec[4] 
+        (<double *> citer.data[8])[0] = _wvec[0] 
+        (<double *> citer.data[9])[0] = _wvec[1] 
+        (<double *> citer.data[10])[0] = _wvec[2] 
+        (<double *> citer.data[11])[0] = _wvec[3] 
+        (<double *> citer.data[12])[0] = _wvec[4] 
         npyiter.advance(&citer)
         size = size -1
       size = npyiter.next(&citer) 
@@ -458,12 +462,12 @@ def ang2ngb_ring (nside,theta,phi, ipixvec = None,wvec = None):
 def ang2ngb_nest (nside,theta,phi, ipixvec = None,wvec = None):
   "ang2ngb_nest"
   shape = numpy.broadcast(1, nside,theta,phi).shape 
-  if ipixvec is None: ipixvec = numpy.empty(shape, dtype=('i8', 3))
-  if wvec is None: wvec = numpy.empty(shape, dtype=('f8', 3))
+  if ipixvec is None: ipixvec = numpy.empty(shape, dtype=('i8', 5))
+  if wvec is None: wvec = numpy.empty(shape, dtype=('f8', 5))
 
-  iter = numpy.nditer([nside,theta,phi,ipixvec[...,0],ipixvec[...,1],ipixvec[...,2],wvec[...,0],wvec[...,1],wvec[...,2]],
-       op_dtypes=['i8','f8','f8','i8','i8','i8','f8','f8','f8'],
-       op_flags=[['readonly'],['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly']],
+  iter = numpy.nditer([nside,theta,phi,ipixvec[...,0],ipixvec[...,1],ipixvec[...,2],ipixvec[...,3],ipixvec[...,4],wvec[...,0],wvec[...,1],wvec[...,2],wvec[...,3],wvec[...,4]],
+       op_dtypes=['i8','f8','f8','i8','i8','i8','i8','i8','f8','f8','f8','f8','f8'],
+       op_flags=[['readonly'],['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly'],['writeonly']],
        flags = ['buffered', 'external_loop', 'zerosize_ok'],
        casting = 'unsafe')
   
@@ -472,9 +476,9 @@ def ang2ngb_nest (nside,theta,phi, ipixvec = None,wvec = None):
   cdef int64_t _nside
   cdef double _theta
   cdef double _phi
-  cdef numpy.ndarray ipixvec_a = numpy.empty(0, dtype=('i8', 3))
+  cdef numpy.ndarray ipixvec_a = numpy.empty(0, dtype=('i8', 5))
   cdef int64_t * _ipixvec = <int64_t *>ipixvec_a.data
-  cdef numpy.ndarray wvec_a = numpy.empty(0, dtype=('f8', 3))
+  cdef numpy.ndarray wvec_a = numpy.empty(0, dtype=('f8', 5))
   cdef double * _wvec = <double *>wvec_a.data
   with nogil:
     while size >0:
@@ -486,9 +490,13 @@ def ang2ngb_nest (nside,theta,phi, ipixvec = None,wvec = None):
         (<int64_t *> citer.data[3])[0] = _ipixvec[0] 
         (<int64_t *> citer.data[4])[0] = _ipixvec[1] 
         (<int64_t *> citer.data[5])[0] = _ipixvec[2] 
-        (<double *> citer.data[6])[0] = _wvec[0] 
-        (<double *> citer.data[7])[0] = _wvec[1] 
-        (<double *> citer.data[8])[0] = _wvec[2] 
+        (<int64_t *> citer.data[6])[0] = _ipixvec[3] 
+        (<int64_t *> citer.data[7])[0] = _ipixvec[4] 
+        (<double *> citer.data[8])[0] = _wvec[0] 
+        (<double *> citer.data[9])[0] = _wvec[1] 
+        (<double *> citer.data[10])[0] = _wvec[2] 
+        (<double *> citer.data[11])[0] = _wvec[3] 
+        (<double *> citer.data[12])[0] = _wvec[4] 
         npyiter.advance(&citer)
         size = size -1
       size = npyiter.next(&citer) 
