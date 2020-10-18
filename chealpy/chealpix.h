@@ -78,6 +78,12 @@ void nest2ring(long nside, long ipnest, long *ipring);
     and returns it in \a *ipring. On error, \a *ipnest is set to -1. */
 void ring2nest(long nside, long ipring, long *ipnest);
 
+int xyf2nest (int nside, int ix, int iy, int face_num);
+void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num);
+int xyf2ring (int nside, int ix, int iy, int face_num);
+void ring2xyf (int nside, int pix, int *ix, int *iy, int *face_num);
+
+
 /*! Returns \a 12*nside*nside. */
 long nside2npix(long nside);
 /*! Returns \a sqrt(npix/12) if this is an integer number, otherwise \a -1. */
@@ -127,6 +133,11 @@ void nest2ring64(int64_t nside, int64_t ipnest, int64_t *ipring);
 /*! Computes the NEST pixel index of pixel \a ipring at resolution \a nside
     and returns it in \a *ipring. On error, \a *ipnest is set to -1. */
 void ring2nest64(int64_t nside, int64_t ipring, int64_t *ipnest);
+
+int64_t xyf2nest64 (int64_t nside, int ix, int iy, int face_num);
+void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy, int *face_num);
+int64_t xyf2ring64 (int64_t nside, int ix, int iy, int face_num);
+void ring2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy, int *face_num);
 
 /*! Returns \a 12*nside*nside. */
 int64_t nside2npix64(int64_t nside);

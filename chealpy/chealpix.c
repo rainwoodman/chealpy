@@ -103,13 +103,13 @@ static const int jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
 
 #ifndef __BMI2__
 
-static int xyf2nest (int nside, int ix, int iy, int face_num)
+int xyf2nest (int nside, int ix, int iy, int face_num)
   {
   return (face_num*nside*nside) +
       (utab[ix&0xff] | (utab[ix>>8]<<16)
     | (utab[iy&0xff]<<1) | (utab[iy>>8]<<17));
   }
-static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
+void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
   {
   int npface_=nside*nside, raw;
   *face_num = pix/npface_;
@@ -125,12 +125,12 @@ static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
 
 #include <x86intrin.h>
 
-static int xyf2nest (int nside, int ix, int iy, int face_num)
+int xyf2nest (int nside, int ix, int iy, int face_num)
   {
   return (face_num*nside*nside) +
     (_pdep_u32(ix,0x55555555u) | _pdep_u32(iy,0xaaaaaaaau));
   }
-static void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
+void nest2xyf (int nside, int pix, int *ix, int *iy, int *face_num)
   {
   int npface_=nside*nside, raw;
   *face_num = pix/npface_;
@@ -148,7 +148,7 @@ static inline int special_div (int a, int b)
   return (t<<1)+(a>=b);
   }
 
-static int xyf2ring (int nside_, int ix, int iy, int face_num)
+int xyf2ring (int nside_, int ix, int iy, int face_num)
   {
   int nl4 = 4*nside_;
   int jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
@@ -182,7 +182,8 @@ static int xyf2ring (int nside_, int ix, int iy, int face_num)
 
   return n_before + jp - 1;
   }
-static void ring2xyf (int nside_, int pix, int *ix, int *iy, int *face_num)
+
+void ring2xyf (int nside_, int pix, int *ix, int *iy, int *face_num)
   {
   int iring, iphi, kshift, nr;
   int ncap_=2*nside_*(nside_-1);
@@ -489,12 +490,12 @@ static int64_t compress_bits64 (int64_t v)
       | (ctab[(raw>>32)&0xff]<<16) | (ctab[(raw>>40)&0xff]<<20);
   }
 
-static int64_t xyf2nest64 (int64_t nside, int ix, int iy, int face_num)
+int64_t xyf2nest64 (int64_t nside, int ix, int iy, int face_num)
   {
   return (face_num*nside*nside) + spread_bits64(ix) + (spread_bits64(iy)<<1);
   }
 
-static void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy,
+void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy,
   int *face_num)
   {
   int64_t npface_=nside*nside;
@@ -506,13 +507,13 @@ static void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy,
 
 #else
 
-static int64_t xyf2nest64 (int64_t nside, int ix, int iy, int face_num)
+int64_t xyf2nest64 (int64_t nside, int ix, int iy, int face_num)
   {
   return (face_num*nside*nside)
     + _pdep_u64(ix,0x5555555555555555ull) + _pdep_u64(iy,0xaaaaaaaaaaaaaaaaull);
   }
 
-static void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy,
+void nest2xyf64 (int64_t nside, int64_t pix, int *ix, int *iy,
   int *face_num)
   {
   int64_t npface_=nside*nside;
@@ -531,7 +532,7 @@ static inline int64_t special_div64 (int64_t a, int64_t b)
   return (t<<1)+(a>=b);
   }
 
-static int64_t xyf2ring64 (int64_t nside_, int ix, int iy, int face_num)
+int64_t xyf2ring64 (int64_t nside_, int ix, int iy, int face_num)
   {
   int64_t nl4 = 4*nside_;
   int64_t jr = (jrll[face_num]*nside_) - ix - iy  - 1, jp;
@@ -565,7 +566,8 @@ static int64_t xyf2ring64 (int64_t nside_, int ix, int iy, int face_num)
 
   return n_before + jp - 1;
   }
-static void ring2xyf64 (int64_t nside_, int64_t pix, int *ix, int *iy,
+
+void ring2xyf64 (int64_t nside_, int64_t pix, int *ix, int *iy,
   int *face_num)
   {
   int64_t iring, iphi, kshift, nr;

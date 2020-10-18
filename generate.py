@@ -38,6 +38,11 @@ funcs = \
   [(rlz, ('ang2ngb_nest', ('nside', 'theta', 'phi'), ('ipixvec', 'wvec'))         ) for rlz in rlz0] +\
   [(rlz, ('nest2ring', ('nside', 'ipnest'), ('ipring',))  ) for rlz in rlz0] +\
   [(rlz, ('ring2nest', ('nside', 'ipring'), ('ipnest',))  ) for rlz in rlz0] +\
+  [(rlz, ('ring2nest', ('nside', 'ipring'), ('ipnest',))  ) for rlz in rlz0] +\
+  [(rlz, ('nest2xyf', ('nside', 'ipix'), ('ix', 'iy', 'face_num'))  ) for rlz in rlz0] +\
+  [(rlz, ('ring2xyf', ('nside', 'ipix'), ('ix', 'iy', 'face_num'))  ) for rlz in rlz0] +\
+  [(rlz, ('xyf2nest', ('nside', 'ix', 'iy', 'face_num'), (), 'ipix')  ) for rlz in rlz0] +\
+  [(rlz, ('xyf2ring', ('nside', 'ix', 'iy', 'face_num'), (), 'ipix')  ) for rlz in rlz0] +\
   [(rlz, ('npix2nside', ('npix',), (), 'nside')           ) for rlz in rlz0] +\
   [(rlz, ('nside2npix', ('nside',), (), 'npix')           ) for rlz in rlz0] +\
   [(rlz, ('ang2vec', ('theta', 'phi'), ('vec', ))         ) for rlz in rlz1] +\
@@ -56,6 +61,7 @@ docstrings = {
 
 # ctype, numpy.dtype
 int_type = {32: ('long', 'int'), 64: ('int64_t', 'i8')}
+iint_type = {32: ('int', 'int'), 64: ('int', 'int')}
 float_type = {32: ('double', 'f8'), 64: ('double', 'f8')}
 vec_type = {32: ('double *', ('f8', 3)), 64: ('double *', ('f8', 3))}
 void_type = {32: ('void', ''), 64: ('void', '')}
@@ -63,19 +69,24 @@ ipixvec_type = {32: ('long *', ('int', 5)), 64: ('int64_t *', ('i8', 5))}
 wvec_type = {32: ('double * ', ('f8', 5)), 64: ('double *', ('f8', 5))}
 
 # populate type information
-var_types = {}
-var_types.update([(var, int_type) for var in \
-          ['npix', 'ipix', 'nside', 'ipring', 'ipnest']])
-var_types.update([(var, float_type) for var in \
-          ['theta', 'phi', 'x', 'y']])
-var_types.update([(var, vec_type) for var in \
-          ['vec']])
-var_types.update([(var, wvec_type) for var in \
-          ['wvec']])
-var_types.update([(var, ipixvec_type) for var in \
-          ['ipixvec']])
-var_types.update([(var, void_type) for var in \
-          [None]])
+var_types = {
+    'npix': int_type,
+    'ipix': int_type,
+    'nside': int_type,
+    'ipring': int_type,
+    'ipnest': int_type,
+    'theta':float_type,
+    'phi':float_type,
+    'x':float_type,
+    'y':float_type,
+    'ix':iint_type,
+    'iy':iint_type,
+    'face_num':iint_type,
+    'vec': vec_type,
+    'wvec': wvec_type,
+    'ipixvec': ipixvec_type,
+    None: void_type,
+}
 
 def isarray(var, wordsize):
   return isinstance(var_types[var][wordsize][1], tuple)

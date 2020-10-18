@@ -84,3 +84,22 @@ def test_gsp2ang_nest(ns, nside, dpix):
   assert_almost_equal(theta1, theta)
   assert_almost_equal(phi1, phi)
 
+@pytest.mark.parametrize("ns, nside, dpix", SUITE)
+def test_xyf_ring(ns, nside, dpix):
+  npix = ns.nside2npix(nside)
+  ipix = numpy.arange(0, npix, dpix)
+
+  ix, iy, f = ns.ring2xyf(nside, ipix)
+  ipix1 = ns.xyf2ring(nside, ix, iy, f)
+
+  assert_almost_equal(ipix, ipix1)
+
+@pytest.mark.parametrize("ns, nside, dpix", SUITE)
+def test_xyf_nest(ns, nside, dpix):
+  npix = ns.nside2npix(nside)
+  ipix = numpy.arange(0, npix, dpix)
+
+  ix, iy, f = ns.nest2xyf(nside, ipix)
+  ipix1 = ns.xyf2nest(nside, ix, iy, f)
+
+  assert_almost_equal(ipix, ipix1)

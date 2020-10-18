@@ -27,6 +27,11 @@ cdef extern from "chealpix.h":
   void _ang2ngb_nest "ang2ngb_nest" (long _nside, double _theta, double _phi, long * _ipixvec, double *  _wvec) nogil
   void _nest2ring "nest2ring" (long _nside, long _ipnest, long * _ipring) nogil
   void _ring2nest "ring2nest" (long _nside, long _ipring, long * _ipnest) nogil
+  void _ring2nest "ring2nest" (long _nside, long _ipring, long * _ipnest) nogil
+  void _nest2xyf "nest2xyf" (long _nside, long _ipix, int * _ix, int * _iy, int * _face_num) nogil
+  void _ring2xyf "ring2xyf" (long _nside, long _ipix, int * _ix, int * _iy, int * _face_num) nogil
+  long _xyf2nest "xyf2nest" (long _nside, int _ix, int _iy, int _face_num) nogil
+  long _xyf2ring "xyf2ring" (long _nside, int _ix, int _iy, int _face_num) nogil
   long _npix2nside "npix2nside" (long _npix) nogil
   long _nside2npix "nside2npix" (long _nside) nogil
   void _ang2vec "ang2vec" (double _theta, double _phi, double * _vec) nogil
@@ -559,6 +564,171 @@ def ring2nest (nside,ipring, ipnest = None):
         size = size -1
       size = npyiter.next(&citer) 
   return ipnest
+
+
+def ring2nest (nside,ipring, ipnest = None):
+  "ring2nest"
+  shape = numpy.broadcast(1, nside,ipring).shape 
+  if ipnest is None: ipnest = numpy.empty(shape, dtype='int')
+
+  iter = numpy.nditer([nside,ipring,ipnest],
+       op_dtypes=['int','int','int'],
+       op_flags=[['readonly'],['readonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef long _nside
+  cdef long _ipring
+  cdef long _ipnest
+  with nogil:
+    while size >0:
+      while size > 0:
+        _nside = (<long * > citer.data[0])[0] 
+        _ipring = (<long * > citer.data[1])[0] 
+        _ring2nest ( _nside, _ipring, &_ipnest) 
+        (<long * > citer.data[2])[0] = _ipnest 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return ipnest
+
+
+def nest2xyf (nside,ipix, ix = None,iy = None,face_num = None):
+  "nest2xyf"
+  shape = numpy.broadcast(1, nside,ipix).shape 
+  if ix is None: ix = numpy.empty(shape, dtype='int')
+  if iy is None: iy = numpy.empty(shape, dtype='int')
+  if face_num is None: face_num = numpy.empty(shape, dtype='int')
+
+  iter = numpy.nditer([nside,ipix,ix,iy,face_num],
+       op_dtypes=['int','int','int','int','int'],
+       op_flags=[['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef long _nside
+  cdef long _ipix
+  cdef int _ix
+  cdef int _iy
+  cdef int _face_num
+  with nogil:
+    while size >0:
+      while size > 0:
+        _nside = (<long * > citer.data[0])[0] 
+        _ipix = (<long * > citer.data[1])[0] 
+        _nest2xyf ( _nside, _ipix, &_ix, &_iy, &_face_num) 
+        (<int * > citer.data[2])[0] = _ix 
+        (<int * > citer.data[3])[0] = _iy 
+        (<int * > citer.data[4])[0] = _face_num 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return ix,iy,face_num
+
+
+def ring2xyf (nside,ipix, ix = None,iy = None,face_num = None):
+  "ring2xyf"
+  shape = numpy.broadcast(1, nside,ipix).shape 
+  if ix is None: ix = numpy.empty(shape, dtype='int')
+  if iy is None: iy = numpy.empty(shape, dtype='int')
+  if face_num is None: face_num = numpy.empty(shape, dtype='int')
+
+  iter = numpy.nditer([nside,ipix,ix,iy,face_num],
+       op_dtypes=['int','int','int','int','int'],
+       op_flags=[['readonly'],['readonly'],['writeonly'],['writeonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef long _nside
+  cdef long _ipix
+  cdef int _ix
+  cdef int _iy
+  cdef int _face_num
+  with nogil:
+    while size >0:
+      while size > 0:
+        _nside = (<long * > citer.data[0])[0] 
+        _ipix = (<long * > citer.data[1])[0] 
+        _ring2xyf ( _nside, _ipix, &_ix, &_iy, &_face_num) 
+        (<int * > citer.data[2])[0] = _ix 
+        (<int * > citer.data[3])[0] = _iy 
+        (<int * > citer.data[4])[0] = _face_num 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return ix,iy,face_num
+
+
+def xyf2nest (nside,ix,iy,face_num, ipix = None):
+  "xyf2nest"
+  shape = numpy.broadcast(1, nside,ix,iy,face_num).shape 
+  if ipix is None: ipix = numpy.empty(shape, dtype='int')
+
+  iter = numpy.nditer([nside,ix,iy,face_num,ipix],
+       op_dtypes=['int','int','int','int','int'],
+       op_flags=[['readonly'],['readonly'],['readonly'],['readonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef long _nside
+  cdef int _ix
+  cdef int _iy
+  cdef int _face_num
+  cdef long _ipix
+  with nogil:
+    while size >0:
+      while size > 0:
+        _nside = (<long * > citer.data[0])[0] 
+        _ix = (<int * > citer.data[1])[0] 
+        _iy = (<int * > citer.data[2])[0] 
+        _face_num = (<int * > citer.data[3])[0] 
+        _ipix = _xyf2nest ( _nside, _ix, _iy, _face_num) 
+        (<long * > citer.data[4])[0] = _ipix 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return ipix
+
+
+def xyf2ring (nside,ix,iy,face_num, ipix = None):
+  "xyf2ring"
+  shape = numpy.broadcast(1, nside,ix,iy,face_num).shape 
+  if ipix is None: ipix = numpy.empty(shape, dtype='int')
+
+  iter = numpy.nditer([nside,ix,iy,face_num,ipix],
+       op_dtypes=['int','int','int','int','int'],
+       op_flags=[['readonly'],['readonly'],['readonly'],['readonly'],['writeonly']],
+       flags = ['buffered', 'external_loop', 'zerosize_ok'],
+       casting = 'unsafe')
+  
+  cdef npyiter.CIter citer
+  cdef size_t size = npyiter.init(&citer, iter)
+  cdef long _nside
+  cdef int _ix
+  cdef int _iy
+  cdef int _face_num
+  cdef long _ipix
+  with nogil:
+    while size >0:
+      while size > 0:
+        _nside = (<long * > citer.data[0])[0] 
+        _ix = (<int * > citer.data[1])[0] 
+        _iy = (<int * > citer.data[2])[0] 
+        _face_num = (<int * > citer.data[3])[0] 
+        _ipix = _xyf2ring ( _nside, _ix, _iy, _face_num) 
+        (<long * > citer.data[4])[0] = _ipix 
+        npyiter.advance(&citer)
+        size = size -1
+      size = npyiter.next(&citer) 
+  return ipix
 
 
 def npix2nside (npix, nside = None):
