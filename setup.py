@@ -36,7 +36,7 @@ extensions = [
  ]
 
 setup(name="chealpy",
-      author="Yu Feng",
+      author="Yu Feng, jedb",
       author_email="yfeng1@berkeley.edu",
       description="Python Binding of chealpix",
       ext_modules = cythonize(extensions),
