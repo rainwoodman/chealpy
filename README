@@ -44,8 +44,8 @@ Plans:
   Healpix C++ binding, take a look at healpy.
 
 
-Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
-        Yu Feng 2020 <yfeng1@berkeley.edu>/<feyu@google.com>
+Authors: Yu Feng, feyu
+Contact: yfeng1@andrew.cmu.edu, yfeng1@berkeley.edu, feyu@google.com
 
 
 List of Functions (all propertly vectorized for numpy):
