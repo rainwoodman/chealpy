@@ -1,7 +1,9 @@
 from setuptools import setup
 from Cython.Build import cythonize
 from distutils.extension import Extension
+from distutils.sysconfig import get_python_inc
 import numpy
+import sysconfig
 
 def find_version(path):
     import re
@@ -18,20 +20,23 @@ extensions = [
     Extension("chealpy.low", 
          sources=["chealpy/low.pyx", "chealpy/chealpix.c", "chealpy/chealpix_ext.c"],
          extra_compile_args=["-O3"],
+         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
          depends=["chealpy/chealpix.h", "chealpy/chealpix_ext.h"],
-         include_dirs=[numpy.get_include(), "chealpy/"],
+         include_dirs=[numpy.get_include(), "chealpy/", sysconfig.get_paths()['include'], get_python_inc()],
     ),
     Extension("chealpy.high", 
          sources=["chealpy/high.pyx", "chealpy/chealpix.c", "chealpy/chealpix_ext.c"],
          extra_compile_args=["-O3"],
+         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
          depends=["chealpy/chealpix.h", "chealpy/chealpix_ext.h"],
-         include_dirs=[numpy.get_include(), "chealpy/"],
+         include_dirs=[numpy.get_include(), "chealpy/", sysconfig.get_paths()['include'], get_python_inc()],
     ),
     Extension("chealpy.compress", 
          sources=["chealpy/compress.pyx", "chealpy/chealpix.c", "chealpy/chealpix_ext.c", "chealpy/hp_compress.c"],
          extra_compile_args=["-O3"],
+         define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
          depends=["chealpy/chealpix.h", "chealpy/chealpix_ext.h", "chealpy/hp_compress.h"],
-         include_dirs=[numpy.get_include(), "chealpy/"],
+         include_dirs=[numpy.get_include(), "chealpy/", sysconfig.get_paths()['include'], get_python_inc()],
     ),
 ]
 

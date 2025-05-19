@@ -1,5 +1,6 @@
+#cython: language_level=3
 cimport numpy
-cimport npyiter
+from . cimport npyiter
 from libc.stdint cimport *
 import numpy
 numpy.import_array()
