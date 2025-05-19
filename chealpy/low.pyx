@@ -1,7 +1,6 @@
 
 # do not edit. This is auto-generated
 #cython: embedsignature=True
-#cython: cdivision=True
 cimport numpy
 cimport npyiter
 from libc.stdint cimport *
@@ -25,9 +24,6 @@ cdef extern from "chealpix.h":
   void _pix2gsp_nest "pix2gsp_nest" (long _nside, long _ipix, double * _x, double * _y) nogil
   void _ang2ngb_ring "ang2ngb_ring" (long _nside, double _theta, double _phi, long * _ipixvec, double *  _wvec) nogil
   void _ang2ngb_nest "ang2ngb_nest" (long _nside, double _theta, double _phi, long * _ipixvec, double *  _wvec) nogil
-  void _nest2ring "nest2ring" (long _nside, long _ipnest, long * _ipring) nogil
-  void _ring2nest "ring2nest" (long _nside, long _ipring, long * _ipnest) nogil
-  void _ring2nest "ring2nest" (long _nside, long _ipring, long * _ipnest) nogil
   void _nest2xyf "nest2xyf" (long _nside, long _ipix, int * _ix, int * _iy, int * _face_num) nogil
   void _ring2xyf "ring2xyf" (long _nside, long _ipix, int * _ix, int * _iy, int * _face_num) nogil
   long _xyf2nest "xyf2nest" (long _nside, int _ix, int _iy, int _face_num) nogil
@@ -506,93 +502,6 @@ def ang2ngb_nest (nside,theta,phi, ipixvec = None,wvec = None):
         size = size -1
       size = npyiter.next(&citer) 
   return ipixvec,wvec
-
-
-def nest2ring (nside,ipnest, ipring = None):
-  "nest2ring"
-  shape = numpy.broadcast(1, nside,ipnest).shape 
-  if ipring is None: ipring = numpy.empty(shape, dtype='int')
-
-  iter = numpy.nditer([nside,ipnest,ipring],
-       op_dtypes=['int','int','int'],
-       op_flags=[['readonly'],['readonly'],['writeonly']],
-       flags = ['buffered', 'external_loop', 'zerosize_ok'],
-       casting = 'unsafe')
-  
-  cdef npyiter.CIter citer
-  cdef size_t size = npyiter.init(&citer, iter)
-  cdef long _nside
-  cdef long _ipnest
-  cdef long _ipring
-  with nogil:
-    while size >0:
-      while size > 0:
-        _nside = (<long * > citer.data[0])[0] 
-        _ipnest = (<long * > citer.data[1])[0] 
-        _nest2ring ( _nside, _ipnest, &_ipring) 
-        (<long * > citer.data[2])[0] = _ipring 
-        npyiter.advance(&citer)
-        size = size -1
-      size = npyiter.next(&citer) 
-  return ipring
-
-
-def ring2nest (nside,ipring, ipnest = None):
-  "ring2nest"
-  shape = numpy.broadcast(1, nside,ipring).shape 
-  if ipnest is None: ipnest = numpy.empty(shape, dtype='int')
-
-  iter = numpy.nditer([nside,ipring,ipnest],
-       op_dtypes=['int','int','int'],
-       op_flags=[['readonly'],['readonly'],['writeonly']],
-       flags = ['buffered', 'external_loop', 'zerosize_ok'],
-       casting = 'unsafe')
-  
-  cdef npyiter.CIter citer
-  cdef size_t size = npyiter.init(&citer, iter)
-  cdef long _nside
-  cdef long _ipring
-  cdef long _ipnest
-  with nogil:
-    while size >0:
-      while size > 0:
-        _nside = (<long * > citer.data[0])[0] 
-        _ipring = (<long * > citer.data[1])[0] 
-        _ring2nest ( _nside, _ipring, &_ipnest) 
-        (<long * > citer.data[2])[0] = _ipnest 
-        npyiter.advance(&citer)
-        size = size -1
-      size = npyiter.next(&citer) 
-  return ipnest
-
-
-def ring2nest (nside,ipring, ipnest = None):
-  "ring2nest"
-  shape = numpy.broadcast(1, nside,ipring).shape 
-  if ipnest is None: ipnest = numpy.empty(shape, dtype='int')
-
-  iter = numpy.nditer([nside,ipring,ipnest],
-       op_dtypes=['int','int','int'],
-       op_flags=[['readonly'],['readonly'],['writeonly']],
-       flags = ['buffered', 'external_loop', 'zerosize_ok'],
-       casting = 'unsafe')
-  
-  cdef npyiter.CIter citer
-  cdef size_t size = npyiter.init(&citer, iter)
-  cdef long _nside
-  cdef long _ipring
-  cdef long _ipnest
-  with nogil:
-    while size >0:
-      while size > 0:
-        _nside = (<long * > citer.data[0])[0] 
-        _ipring = (<long * > citer.data[1])[0] 
-        _ring2nest ( _nside, _ipring, &_ipnest) 
-        (<long * > citer.data[2])[0] = _ipnest 
-        npyiter.advance(&citer)
-        size = size -1
-      size = npyiter.next(&citer) 
-  return ipnest
 
 
 def nest2xyf (nside,ipix, ix = None,iy = None,face_num = None):

@@ -1,7 +1,6 @@
 
 # do not edit. This is auto-generated
 #cython: embedsignature=True
-#cython: cdivision=True
 cimport numpy
 cimport npyiter
 from libc.stdint cimport *
@@ -26,7 +25,6 @@ cdef extern from "chealpix.h":
   void _ang2ngb_ring64 "ang2ngb_ring64" (int64_t _nside, double _theta, double _phi, int64_t * _ipixvec, double * _wvec) nogil
   void _ang2ngb_nest64 "ang2ngb_nest64" (int64_t _nside, double _theta, double _phi, int64_t * _ipixvec, double * _wvec) nogil
   void _nest2ring64 "nest2ring64" (int64_t _nside, int64_t _ipnest, int64_t * _ipring) nogil
-  void _ring2nest64 "ring2nest64" (int64_t _nside, int64_t _ipring, int64_t * _ipnest) nogil
   void _ring2nest64 "ring2nest64" (int64_t _nside, int64_t _ipring, int64_t * _ipnest) nogil
   void _nest2xyf64 "nest2xyf64" (int64_t _nside, int64_t _ipix, int * _ix, int * _iy, int * _face_num) nogil
   void _ring2xyf64 "ring2xyf64" (int64_t _nside, int64_t _ipix, int * _ix, int * _iy, int * _face_num) nogil
@@ -535,35 +533,6 @@ def nest2ring (nside,ipnest, ipring = None):
         size = size -1
       size = npyiter.next(&citer) 
   return ipring
-
-
-def ring2nest (nside,ipring, ipnest = None):
-  "ring2nest"
-  shape = numpy.broadcast(1, nside,ipring).shape 
-  if ipnest is None: ipnest = numpy.empty(shape, dtype='i8')
-
-  iter = numpy.nditer([nside,ipring,ipnest],
-       op_dtypes=['i8','i8','i8'],
-       op_flags=[['readonly'],['readonly'],['writeonly']],
-       flags = ['buffered', 'external_loop', 'zerosize_ok'],
-       casting = 'unsafe')
-  
-  cdef npyiter.CIter citer
-  cdef size_t size = npyiter.init(&citer, iter)
-  cdef int64_t _nside
-  cdef int64_t _ipring
-  cdef int64_t _ipnest
-  with nogil:
-    while size >0:
-      while size > 0:
-        _nside = (<int64_t * > citer.data[0])[0] 
-        _ipring = (<int64_t * > citer.data[1])[0] 
-        _ring2nest64 ( _nside, _ipring, &_ipnest) 
-        (<int64_t * > citer.data[2])[0] = _ipnest 
-        npyiter.advance(&citer)
-        size = size -1
-      size = npyiter.next(&citer) 
-  return ipnest
 
 
 def ring2nest (nside,ipring, ipnest = None):

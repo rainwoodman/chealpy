@@ -1,6 +1,6 @@
 from setuptools import setup
 from Cython.Build import cythonize
-from distutils.extension import Extension
+from setuptools import Extension
 import numpy
 
 def find_version(path):
@@ -40,7 +40,7 @@ setup(name="chealpy",
       author_email="yfeng1@berkeley.edu",
       description="Python Binding of chealpix",
       ext_modules = cythonize(extensions),
-      install_requires=["cython", "numpy"],
+      install_requires=["Cython~=3.0", "numpy"],
       license="GPLv2+",
       package_dir = {"chealpy": "chealpy"},
       packages = [ "chealpy" ],
