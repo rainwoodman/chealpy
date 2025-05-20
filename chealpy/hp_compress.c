@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h> // For fprintf, stderr
+#include <limits.h> // For SSIZE_MAX
+
+#include "Python.h" // For Python C-API error handling
 
 #include "chealpix.h"
 #include "hp_compress.h"
@@ -34,11 +38,55 @@ hp_sparse_from_dense(int nside, int64_t ipix_start, int64_t ipix_end, double * v
 hp_sparse_t *
 hp_sparse_down_sample(hp_sparse_t * map_in)
 {
-    hp_sparse_t * map_out = malloc(sizeof(hp_sparse_t));
+    hp_sparse_t * map_out = NULL;
+    int64_t * pix = NULL;
+    double * value = NULL;
+
+    if (!map_in) {
+        PyErr_SetString(PyExc_ValueError, "Input map is NULL in hp_sparse_down_sample");
+        return NULL;
+    }
+    if (map_in->nside <= 0 || (map_in->nside % 2 != 0)) {
+        PyErr_SetString(PyExc_ValueError, "Input map nside must be positive and even");
+        return NULL;
+    }
+
+    map_out = malloc(sizeof(hp_sparse_t));
+    if (!map_out) {
+        PyErr_NoMemory();
+        return NULL;
+    }
     map_out->nside = map_in->nside / 2;
+    map_out->pix = NULL; // Initialize to allow cleanup
+    map_out->value = NULL; // Initialize to allow cleanup
+
     ssize_t max_size = map_in->size;
-    int64_t * pix = malloc(sizeof(pix[0]) * max_size);
-    double * value = malloc(sizeof(value[0]) * max_size);
+
+    if (max_size < 0) { // Should not happen if map_in->size is ssize_t and positive
+        PyErr_Format(PyExc_ValueError, "Input map size is negative: %zd", max_size);
+        goto error_exit;
+    }
+    // Check for potential overflow before multiplication for initial buffers
+    if (max_size > 0 && ( (SSIZE_MAX / sizeof(pix[0])) < (size_t)max_size ) ) {
+        PyErr_Format(PyExc_OverflowError, "Input map size too large for pix buffer allocation: %zd", max_size);
+        goto error_exit;
+    }
+    pix = malloc(sizeof(pix[0]) * max_size);
+    if (!pix && max_size > 0) { // Check max_size > 0 because malloc(0) can be NULL or valid
+        PyErr_NoMemory();
+        goto error_exit;
+    }
+
+    if (max_size > 0 && ( (SSIZE_MAX / sizeof(value[0])) < (size_t)max_size ) ) {
+        PyErr_Format(PyExc_OverflowError, "Input map size too large for value buffer allocation: %zd", max_size);
+        goto error_exit;
+    }
+    value = malloc(sizeof(value[0]) * max_size);
+    if (!value && max_size > 0) {
+        PyErr_NoMemory();
+        goto error_exit;
+    }
+
     double last_value[4];
     int64_t last_ip2 = -1;
     int last_n = 0;
@@ -75,20 +123,58 @@ hp_sparse_down_sample(hp_sparse_t * map_in)
         } else {
             break;
         }
-        if(last_n == 4) { raise(); }
+        if(last_n == 4) { 
+            PyErr_SetString(PyExc_RuntimeError, "Buffer overflow in hp_sparse_down_sample (last_n)");
+            goto error_exit; // Ensure cleanup
+        }
         last_value[last_n] = map_in->value[i];
         last_n++;
     }
     map_out->size = j;
+
+    if (map_out->size < 0) { // j should not be negative if logic is correct
+        PyErr_Format(PyExc_RuntimeError, "Calculated map_out size is negative: %zd", map_out->size);
+        goto error_exit;
+    }
+
+    // Check for potential overflow for final map_out allocations
+    if (map_out->size > 0 && ( (SSIZE_MAX / sizeof(map_out->pix[0])) < (size_t)map_out->size ) ) {
+        PyErr_Format(PyExc_OverflowError, "Output map size too large for pix buffer: %zd", map_out->size);
+        goto error_exit;
+    }
     map_out->pix = malloc(sizeof(map_out->pix[0]) * map_out->size);
+    if (!map_out->pix && map_out->size > 0) {
+        PyErr_NoMemory();
+        goto error_exit;
+    }
+
+    if (map_out->size > 0 && ( (SSIZE_MAX / sizeof(map_out->value[0])) < (size_t)map_out->size ) ) {
+        PyErr_Format(PyExc_OverflowError, "Output map size too large for value buffer: %zd", map_out->size);
+        goto error_exit;
+    }
     map_out->value = malloc(sizeof(map_out->value[0]) * map_out->size);
+    if (!map_out->value && map_out->size > 0) {
+        PyErr_NoMemory();
+        goto error_exit;
+    }
+
     for(i = 0; i < map_out->size; i ++) {
         map_out->pix[i] = pix[i];
         map_out->value[i] = value[i];
     }
+    free(pix); // pix is temporary buffer, now copied or not needed
+    free(value); // value is temporary buffer
+    return map_out;
+
+error_exit:
     free(pix);
     free(value);
-    return map_out;
+    if (map_out) {
+        free(map_out->pix); // These might be NULL if not allocated yet
+        free(map_out->value);
+        free(map_out);
+    }
+    return NULL;
 }
 
 void

@@ -2,7 +2,7 @@
 # python interpreter adds this to a top level script
 # but we will likely have a name conflict (runtests.py .vs runtests package)
 import sys; sys.path.pop(0)
-from runtests import Tester
+# from runtests import Tester  # Commented out due to circular import
 
 import os.path
 

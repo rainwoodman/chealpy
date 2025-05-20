@@ -1,9 +1,10 @@
 
 # do not edit. This is auto-generated
+#cython: language_level=3
 #cython: embedsignature=True
 #cython: cdivision=True
 cimport numpy
-cimport npyiter
+from . cimport npyiter
 from libc.stdint cimport *
 import numpy
 numpy.import_array()

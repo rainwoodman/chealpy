@@ -25,7 +25,7 @@ cimport numpy
 from cpython.ref cimport PyObject
 
 ctypedef void NpyIter
-ctypedef int (*IterNextFunc)(NpyIter * iter) nogil
+ctypedef int (*IterNextFunc)(NpyIter * iter) noexcept nogil
 ctypedef void (*GetMultiIndexFunc)(NpyIter * iter, numpy.npy_intp *outcoords) nogil
 
 ctypedef struct NewNpyArrayIterObject:
@@ -67,7 +67,7 @@ cdef inline size_t init(CIter * self, iter):
     self.nop = GetNOp(self.npyiter)
     return self.size_ptr[0]
 
-cdef inline void advance(CIter * self) nogil:
+cdef inline void advance(CIter * self) noexcept nogil:
     cdef int iop
     for iop in range(self.nop):
       self.data[iop] += self.strides[iop]
