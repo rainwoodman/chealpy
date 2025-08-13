@@ -46,6 +46,7 @@ Plans:
 
 Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
         Yu Feng 2020 <yfeng1@berkeley.edu>/<feyu@google.com>
+        Jed 2024
 
 
 List of Functions (all propertly vectorized for numpy):
