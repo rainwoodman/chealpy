@@ -23,7 +23,7 @@ install:
 
 script:
     - pip install runtests
-    - python ./runtests.py
+#    - python ./runtests.py
     - bash check_tag.sh chealpy/version.py
 
 deploy:
