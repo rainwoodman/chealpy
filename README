@@ -41,7 +41,7 @@ Plans:
     may need to rewrite chealpix.c / or add new routines to upstream.
 
   Probably should never support transforms (anafast). For a feature-rich
-  Healpix C++ binding, take a look at healpy.
+  Healpix C++ binding, take a a look at healpy.
 
 
 Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
@@ -64,3 +64,10 @@ List of Functions (all propertly vectorized for numpy):
     def nside2npix (nside, npix = None)
     def ang2vec (theta,phi, vec = None)
     def vec2ang (vec, theta = None, phi = None)
+
+first
+second
+systemd-private-5a5f599c4c2745dcaec9449502c09ac6-systemd-logind.service-6jBpWL
+systemd-private-5a5f599c4c2745dcaec9449502c09ac6-systemd-resolved.service-QyozWT
+systemd-private-5a5f599c4c2745dcaec9449502c09ac6-systemd-timesyncd.service-W5dYWs
+tmux-1001
