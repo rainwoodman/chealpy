@@ -46,7 +46,7 @@ Plans:
 
 Author: Yu Feng 2012 <yfeng1@andrew.cmu.edu>
         Yu Feng 2020 <yfeng1@berkeley.edu>/<feyu@google.com>
-        Jules 2024
+        Jules
 
 
 List of Functions (all propertly vectorized for numpy):
