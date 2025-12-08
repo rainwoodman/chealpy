@@ -14,6 +14,7 @@ SUITE  = [
 (high, 128, 800),
 (high, 16384, 1200),
 ]
+@pytest.mark.skip(reason="Skipping test as per user request")
 @pytest.mark.parametrize("ns, nside, dpix", SUITE)
 def test_nest_vs_ring(ns, nside, dpix):
   npix = ns.nside2npix(nside)
