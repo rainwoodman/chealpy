@@ -64,3 +64,4 @@ List of Functions (all propertly vectorized for numpy):
     def nside2npix (nside, npix = None)
     def ang2vec (theta,phi, vec = None)
     def vec2ang (vec, theta = None, phi = None)
+Author: Feyu
